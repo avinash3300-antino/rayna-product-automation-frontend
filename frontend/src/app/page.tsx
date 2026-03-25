@@ -336,41 +336,6 @@ const modules = [
   { icon: "📊", name: "Monitoring & Alerts", desc: "Freshness heatmap, API health, errors" },
 ];
 
-const roadmapPhases = [
-  {
-    phase: 1,
-    title: "Foundation",
-    weeks: "Weeks 1–4",
-    color: "#60A5FA",
-    items: ["API audit", "Legal review", "Schema sign-off", "API partnerships", "Tag taxonomy approval"],
-  },
-  {
-    phase: 2,
-    title: "Hotels Pilot",
-    weeks: "Weeks 5–12",
-    color: "#C9A84C",
-    items: ["End-to-end hotel pipeline", "Review Queues A+B", "Basic Operations UI", "Booking Source Mapper"],
-  },
-  {
-    phase: 3,
-    title: "Attractions & Transfers",
-    weeks: "Weeks 13–20",
-    color: "#00D4B4",
-    items: ["Full pipeline", "Package Builder", "Full Booking Source UI", "AI auto-tagging"],
-  },
-  {
-    phase: 4,
-    title: "Scale & Restaurants",
-    weeks: "Weeks 21–28",
-    color: "#22C55E",
-    items: [
-      "Restaurants",
-      "Automated refresh cadence",
-      "Multi-destination parallel runs",
-      "All package types live",
-    ],
-  },
-];
 
 const techRows = [
   {
