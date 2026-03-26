@@ -1,7 +1,6 @@
 "use client";
 
-import { useState, useCallback } from "react";
-import { useSession } from "next-auth/react";
+import { useState, useCallback, useMemo, useRef } from "react";
 import {
   Save,
   CheckCircle,
@@ -9,6 +8,7 @@ import {
   Shield,
   SlidersHorizontal,
   Clock,
+  Loader2,
 } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
@@ -17,34 +17,68 @@ import { PersonalInfoTab } from "./personal-info-tab";
 import { SecurityTab } from "./security-tab";
 import { PreferencesTab } from "./preferences-tab";
 import { ActivityTab } from "./activity-tab";
-import { MOCK_USERS } from "@/lib/mock-users";
+import { useCurrentUser, useUpdateProfile } from "@/hooks/api";
 import {
-  MOCK_PERSONAL_INFO,
   MOCK_PROFILE_STATS,
   MOCK_ACTIVE_SESSIONS,
   MOCK_NOTIFICATION_PREFERENCES,
   MOCK_UI_PREFERENCES,
-  MOCK_PROFILE_ACTIVITY,
 } from "@/lib/mock-profile-data";
+import type { PersonalInfo } from "@/types/profile";
 
 export function MyProfile() {
-  const { data: session } = useSession();
+  const { data: currentUser, isLoading } = useCurrentUser();
+  const updateProfileMutation = useUpdateProfile();
   const [isDirty, setIsDirty] = useState(false);
   const [saved, setSaved] = useState(false);
-
-  // Resolve current user from mock data
-  const currentUser =
-    MOCK_USERS.find((u) => u.email === session?.user?.email) ?? MOCK_USERS[0];
+  const personalInfoRef = useRef<PersonalInfo | null>(null);
 
   const markDirty = useCallback(() => {
     setIsDirty(true);
     setSaved(false);
   }, []);
 
+  // Build PersonalInfo from the API user data
+  const personalInfo = useMemo<PersonalInfo>(
+    () => ({
+      fullName: currentUser?.fullName ?? "",
+      email: currentUser?.email ?? "",
+      jobTitle: currentUser?.jobTitle ?? "",
+      department: currentUser?.department ?? "",
+      phone: currentUser?.phone ?? "",
+      timezone: currentUser?.timezone ?? "Asia/Dubai",
+      language: "en",
+    }),
+    [currentUser]
+  );
+
   function handleSave() {
-    setIsDirty(false);
-    setSaved(true);
-    setTimeout(() => setSaved(false), 2000);
+    const info = personalInfoRef.current;
+    if (!info) return;
+    updateProfileMutation.mutate(
+      {
+        full_name: info.fullName || undefined,
+        job_title: info.jobTitle || undefined,
+        department: info.department || undefined,
+        phone: info.phone || undefined,
+        timezone: info.timezone || undefined,
+      },
+      {
+        onSuccess: () => {
+          setIsDirty(false);
+          setSaved(true);
+          setTimeout(() => setSaved(false), 2000);
+        },
+      }
+    );
+  }
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center py-16">
+        <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+      </div>
+    );
   }
 
   return (
@@ -58,11 +92,16 @@ export function MyProfile() {
           </p>
         </div>
         <Button
-          disabled={!isDirty && !saved}
+          disabled={(!isDirty && !saved) || updateProfileMutation.isPending}
           onClick={handleSave}
           className="gap-2"
         >
-          {saved ? (
+          {updateProfileMutation.isPending ? (
+            <>
+              <Loader2 className="h-4 w-4 animate-spin" />
+              Saving...
+            </>
+          ) : saved ? (
             <>
               <CheckCircle className="h-4 w-4" />
               Saved!
@@ -80,7 +119,9 @@ export function MyProfile() {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Left Column — Profile Card */}
         <div className="lg:col-span-1">
-          <ProfileCard user={currentUser} stats={MOCK_PROFILE_STATS} />
+          {currentUser && (
+            <ProfileCard user={currentUser} stats={MOCK_PROFILE_STATS} />
+          )}
         </div>
 
         {/* Right Column — Tabs */}
@@ -119,8 +160,11 @@ export function MyProfile() {
 
             <TabsContent value="personal">
               <PersonalInfoTab
-                initialInfo={MOCK_PERSONAL_INFO}
+                initialInfo={personalInfo}
                 onDirty={markDirty}
+                onInfoChange={(info) => {
+                  personalInfoRef.current = info;
+                }}
               />
             </TabsContent>
 
@@ -140,7 +184,7 @@ export function MyProfile() {
             </TabsContent>
 
             <TabsContent value="activity">
-              <ActivityTab activities={MOCK_PROFILE_ACTIVITY} />
+              <ActivityTab />
             </TabsContent>
           </Tabs>
         </div>

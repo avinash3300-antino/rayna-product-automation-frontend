@@ -23,12 +23,11 @@ function AccessDenied() {
   );
 }
 
-// Simulated admin check — in production this would check actual user roles
 function useIsAdmin(): boolean {
   const { data: session } = useSession();
-  // For demo purposes, treat all authenticated users as admin
-  // In production: check session.user.roles?.includes("admin")
-  return !!session?.user;
+  const roles = session?.user?.roles;
+  if (!roles) return false;
+  return roles.includes("admin");
 }
 
 export default function UsersPage() {

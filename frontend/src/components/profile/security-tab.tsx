@@ -12,7 +12,11 @@ import {
   Smartphone,
   Laptop,
   Globe,
+  Loader2,
+  AlertCircle,
+  CheckCircle,
 } from "lucide-react";
+import { useChangePassword } from "@/hooks/api";
 import {
   Card,
   CardContent,
@@ -87,6 +91,8 @@ export function SecurityTab({ initialSessions, onDirty }: SecurityTabProps) {
   const [showNew, setShowNew] = useState(false);
   const [showConfirm, setShowConfirm] = useState(false);
   const [sessions, setSessions] = useState<ActiveSession[]>(initialSessions);
+  const [passwordSuccess, setPasswordSuccess] = useState(false);
+  const changePasswordMutation = useChangePassword();
 
   const pw = form.newPassword;
   const strength = useMemo(() => calcPasswordStrength(pw), [pw]);
@@ -236,9 +242,49 @@ export function SecurityTab({ initialSessions, onDirty }: SecurityTabProps) {
             </div>
           )}
 
+          {changePasswordMutation.error && (
+            <div className="flex items-center gap-2 rounded-md bg-destructive/10 px-3 py-2 text-xs text-destructive">
+              <AlertCircle className="h-3.5 w-3.5 shrink-0" />
+              {changePasswordMutation.error.message || "Failed to update password."}
+            </div>
+          )}
+
+          {passwordSuccess && (
+            <div className="flex items-center gap-2 rounded-md bg-emerald-500/10 px-3 py-2 text-xs text-emerald-600">
+              <CheckCircle className="h-3.5 w-3.5 shrink-0" />
+              Password updated successfully.
+            </div>
+          )}
+
           <div className="flex justify-end pt-2">
-            <Button disabled={!canUpdatePassword} size="sm">
-              Update Password
+            <Button
+              disabled={!canUpdatePassword || changePasswordMutation.isPending}
+              size="sm"
+              onClick={() => {
+                changePasswordMutation.mutate(
+                  {
+                    current_password: form.currentPassword,
+                    new_password: form.newPassword,
+                    confirm_password: form.confirmPassword,
+                  },
+                  {
+                    onSuccess: () => {
+                      setForm({ currentPassword: "", newPassword: "", confirmPassword: "" });
+                      setPasswordSuccess(true);
+                      setTimeout(() => setPasswordSuccess(false), 3000);
+                    },
+                  }
+                );
+              }}
+            >
+              {changePasswordMutation.isPending ? (
+                <>
+                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                  Updating...
+                </>
+              ) : (
+                "Update Password"
+              )}
             </Button>
           </div>
         </CardContent>

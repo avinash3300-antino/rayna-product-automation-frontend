@@ -16,6 +16,8 @@ import {
   ChevronUp,
   X,
   Shield,
+  Loader2,
+  AlertCircle,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -65,10 +67,11 @@ import {
   ROLES_REFERENCE,
 } from "@/types/users";
 import {
-  MOCK_USERS,
-  MOCK_ROLE_HISTORY,
-  MOCK_USER_ACTIVITY,
-} from "@/lib/mock-users";
+  useUsers,
+  useInviteUser,
+  useUpdateUser,
+  useResetUserPassword,
+} from "@/hooks/api";
 
 const ALL_ROLES: UserRole[] = [
   "admin",
@@ -101,8 +104,8 @@ function timeAgo(dateStr: string | null): string {
 }
 
 export function UserManagement() {
-  const [users, setUsers] = useState<AppUser[]>(MOCK_USERS);
   const [search, setSearch] = useState("");
+  const [page, setPage] = useState(1);
   const [inviteOpen, setInviteOpen] = useState(false);
   const [editUser, setEditUser] = useState<AppUser | null>(null);
   const [rolesExpanded, setRolesExpanded] = useState(false);
@@ -117,24 +120,26 @@ export function UserManagement() {
   const [editStatus, setEditStatus] = useState<UserStatus>("active");
   const [editRoles, setEditRoles] = useState<UserRole[]>([]);
 
-  const filteredUsers = useMemo(() => {
-    if (!search.trim()) return users;
-    const q = search.toLowerCase();
-    return users.filter(
-      (u) =>
-        u.fullName.toLowerCase().includes(q) ||
-        u.email.toLowerCase().includes(q)
-    );
-  }, [users, search]);
+  // API hooks
+  const {
+    data: usersData,
+    isLoading,
+    error,
+  } = useUsers({ search: search || undefined, page, perPage: 25 });
+  const users = usersData?.data ?? [];
 
-  // Stats
+  const inviteMutation = useInviteUser();
+  const updateMutation = useUpdateUser();
+  const resetPasswordMutation = useResetUserPassword();
+
+  // Stats derived from current data
   const stats = useMemo(() => {
-    const total = users.length;
+    const total = usersData?.total ?? 0;
     const active = users.filter((u) => u.status === "active").length;
     const pending = users.filter((u) => u.lastLogin === null).length;
     const distinctRoles = new Set(users.flatMap((u) => u.roles)).size;
     return { total, active, pending, distinctRoles };
-  }, [users]);
+  }, [users, usersData?.total]);
 
   // Invite handlers
   const handleInviteRoleToggle = useCallback((role: UserRole) => {
@@ -148,24 +153,20 @@ export function UserManagement() {
 
   const handleSendInvite = useCallback(() => {
     if (!inviteForm.fullName || !inviteForm.email || inviteForm.roles.length === 0) return;
-    const now = new Date().toISOString();
-    const newUser: AppUser = {
-      id: `usr-${Date.now()}`,
-      fullName: inviteForm.fullName,
-      email: inviteForm.email,
-      avatarUrl: null,
-      roles: inviteForm.roles,
-      status: "active",
-      suspendedReason: null,
-      suspendedAt: null,
-      lastLogin: null,
-      createdAt: now,
-      updatedAt: now,
-    };
-    setUsers((prev) => [...prev, newUser]);
-    setInviteForm({ fullName: "", email: "", roles: [] });
-    setInviteOpen(false);
-  }, [inviteForm]);
+    inviteMutation.mutate(
+      {
+        full_name: inviteForm.fullName,
+        email: inviteForm.email,
+        roles: inviteForm.roles,
+      },
+      {
+        onSuccess: () => {
+          setInviteForm({ fullName: "", email: "", roles: [] });
+          setInviteOpen(false);
+        },
+      }
+    );
+  }, [inviteForm, inviteMutation]);
 
   // Edit handlers
   const handleOpenEdit = useCallback((user: AppUser) => {
@@ -177,59 +178,49 @@ export function UserManagement() {
 
   const handleSaveEdit = useCallback(() => {
     if (!editUser) return;
-    setUsers((prev) =>
-      prev.map((u) =>
-        u.id === editUser.id
-          ? {
-              ...u,
-              fullName: editName,
-              status: editStatus,
-              roles: editRoles,
-              suspendedReason:
-                editStatus === "suspended" && u.status !== "suspended"
-                  ? "Manually suspended by admin"
-                  : u.suspendedReason,
-              suspendedAt:
-                editStatus === "suspended" && u.status !== "suspended"
-                  ? new Date().toISOString()
-                  : u.suspendedAt,
-              updatedAt: new Date().toISOString(),
-            }
-          : u
-      )
+    updateMutation.mutate(
+      {
+        userId: editUser.id,
+        data: {
+          full_name: editName,
+          status: editStatus,
+          roles: editRoles,
+        },
+      },
+      {
+        onSuccess: () => {
+          setEditUser(null);
+        },
+      }
     );
-    setEditUser(null);
-  }, [editUser, editName, editStatus, editRoles]);
+  }, [editUser, editName, editStatus, editRoles, updateMutation]);
 
-  const handleSuspend = useCallback((userId: string) => {
-    setUsers((prev) =>
-      prev.map((u) =>
-        u.id === userId
-          ? {
-              ...u,
-              status: "suspended" as UserStatus,
-              suspendedReason: "Suspended by admin",
-              suspendedAt: new Date().toISOString(),
-              updatedAt: new Date().toISOString(),
-            }
-          : u
-      )
-    );
-  }, []);
+  const handleSuspend = useCallback(
+    (userId: string) => {
+      updateMutation.mutate({
+        userId,
+        data: { status: "suspended" },
+      });
+    },
+    [updateMutation]
+  );
 
-  const handleDeactivate = useCallback((userId: string) => {
-    setUsers((prev) =>
-      prev.map((u) =>
-        u.id === userId
-          ? {
-              ...u,
-              status: "inactive" as UserStatus,
-              updatedAt: new Date().toISOString(),
-            }
-          : u
-      )
-    );
-  }, []);
+  const handleDeactivate = useCallback(
+    (userId: string) => {
+      updateMutation.mutate({
+        userId,
+        data: { status: "inactive" },
+      });
+    },
+    [updateMutation]
+  );
+
+  const handleResetPassword = useCallback(
+    (userId: string) => {
+      resetPasswordMutation.mutate(userId);
+    },
+    [resetPasswordMutation]
+  );
 
   const handleAddEditRole = useCallback((role: UserRole) => {
     setEditRoles((prev) =>
@@ -240,34 +231,6 @@ export function UserManagement() {
   const handleRemoveEditRole = useCallback((role: UserRole) => {
     setEditRoles((prev) => prev.filter((r) => r !== role));
   }, []);
-
-  // Get role history and activity for edit user
-  const editRoleHistory = useMemo(
-    () =>
-      editUser
-        ? MOCK_ROLE_HISTORY.filter((rh) => rh.userId === editUser.id)
-        : [],
-    [editUser]
-  );
-
-  const editActivity = useMemo(
-    () =>
-      editUser
-        ? MOCK_USER_ACTIVITY.filter((a) => a.userId === editUser.id).slice(0, 5)
-        : [],
-    [editUser]
-  );
-
-  const editReviewCount = useMemo(() => {
-    if (!editUser) return 0;
-    return MOCK_USER_ACTIVITY.filter(
-      (a) =>
-        a.userId === editUser.id &&
-        (a.action.includes("Reviewed") ||
-          a.action.includes("Approved") ||
-          a.action.includes("Rejected"))
-    ).length;
-  }, [editUser]);
 
   return (
     <div className="space-y-6">
@@ -292,7 +255,10 @@ export function UserManagement() {
         <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
         <Input
           value={search}
-          onChange={(e) => setSearch(e.target.value)}
+          onChange={(e) => {
+            setSearch(e.target.value);
+            setPage(1);
+          }}
           placeholder="Search by name or email..."
           className="pl-9"
         />
@@ -348,122 +314,172 @@ export function UserManagement() {
         </Card>
       </div>
 
+      {/* Error State */}
+      {error && (
+        <div className="flex items-center gap-2 rounded-md bg-destructive/10 px-4 py-3 text-sm text-destructive">
+          <AlertCircle className="h-4 w-4 shrink-0" />
+          Failed to load users. Please try again.
+        </div>
+      )}
+
       {/* Users Table */}
       <Card>
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead>User</TableHead>
-              <TableHead>Roles</TableHead>
-              <TableHead>Status</TableHead>
-              <TableHead>Last Login</TableHead>
-              <TableHead>Created At</TableHead>
-              <TableHead className="text-right">Actions</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {filteredUsers.map((user) => {
-              const statusConfig = USER_STATUS_CONFIG[user.status];
-              return (
-                <TableRow key={user.id}>
-                  <TableCell>
-                    <div className="flex items-center gap-3">
-                      <Avatar className="h-9 w-9">
-                        <AvatarFallback className="bg-navy text-white text-xs">
-                          {getInitials(user.fullName)}
-                        </AvatarFallback>
-                      </Avatar>
-                      <div>
-                        <p className="font-medium text-sm">{user.fullName}</p>
-                        <p className="text-xs text-muted-foreground">
-                          {user.email}
-                        </p>
+        {isLoading ? (
+          <div className="flex items-center justify-center py-16">
+            <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+          </div>
+        ) : (
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>User</TableHead>
+                <TableHead>Roles</TableHead>
+                <TableHead>Status</TableHead>
+                <TableHead>Last Login</TableHead>
+                <TableHead>Created At</TableHead>
+                <TableHead className="text-right">Actions</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {users.map((user) => {
+                const statusConfig = USER_STATUS_CONFIG[user.status];
+                return (
+                  <TableRow key={user.id}>
+                    <TableCell>
+                      <div className="flex items-center gap-3">
+                        <Avatar className="h-9 w-9">
+                          <AvatarFallback className="bg-navy text-white text-xs">
+                            {getInitials(user.fullName)}
+                          </AvatarFallback>
+                        </Avatar>
+                        <div>
+                          <p className="font-medium text-sm">{user.fullName}</p>
+                          <p className="text-xs text-muted-foreground">
+                            {user.email}
+                          </p>
+                        </div>
                       </div>
-                    </div>
-                  </TableCell>
-                  <TableCell>
-                    <div className="flex flex-wrap gap-1">
-                      {user.roles.map((role) => {
-                        const rc = USER_ROLE_CONFIG[role];
-                        return (
-                          <Badge
-                            key={role}
-                            variant="outline"
-                            className={`text-[10px] px-1.5 py-0 ${rc.color}`}
+                    </TableCell>
+                    <TableCell>
+                      <div className="flex flex-wrap gap-1">
+                        {user.roles.map((role) => {
+                          const rc = USER_ROLE_CONFIG[role];
+                          if (!rc) return null;
+                          return (
+                            <Badge
+                              key={role}
+                              variant="outline"
+                              className={`text-[10px] px-1.5 py-0 ${rc.color}`}
+                            >
+                              {rc.label}
+                            </Badge>
+                          );
+                        })}
+                      </div>
+                    </TableCell>
+                    <TableCell>
+                      {statusConfig && (
+                        <Badge
+                          variant="outline"
+                          className={`text-[10px] ${statusConfig.color}`}
+                        >
+                          {statusConfig.label}
+                        </Badge>
+                      )}
+                    </TableCell>
+                    <TableCell className="text-sm text-muted-foreground">
+                      <div className="flex items-center gap-1">
+                        <Clock className="h-3 w-3" />
+                        {timeAgo(user.lastLogin)}
+                      </div>
+                    </TableCell>
+                    <TableCell className="text-sm text-muted-foreground">
+                      {new Date(user.createdAt).toLocaleDateString()}
+                    </TableCell>
+                    <TableCell className="text-right">
+                      <div className="flex items-center justify-end gap-1">
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => handleOpenEdit(user)}
+                          title="Edit"
+                        >
+                          <Pencil className="h-3.5 w-3.5" />
+                        </Button>
+                        {user.status === "active" && (
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => handleSuspend(user.id)}
+                            title="Suspend"
                           >
-                            {rc.label}
-                          </Badge>
-                        );
-                      })}
-                    </div>
-                  </TableCell>
-                  <TableCell>
-                    <Badge
-                      variant="outline"
-                      className={`text-[10px] ${statusConfig.color}`}
-                    >
-                      {statusConfig.label}
-                    </Badge>
-                  </TableCell>
-                  <TableCell className="text-sm text-muted-foreground">
-                    <div className="flex items-center gap-1">
-                      <Clock className="h-3 w-3" />
-                      {timeAgo(user.lastLogin)}
-                    </div>
-                  </TableCell>
-                  <TableCell className="text-sm text-muted-foreground">
-                    {new Date(user.createdAt).toLocaleDateString()}
-                  </TableCell>
-                  <TableCell className="text-right">
-                    <div className="flex items-center justify-end gap-1">
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => handleOpenEdit(user)}
-                        title="Edit"
-                      >
-                        <Pencil className="h-3.5 w-3.5" />
-                      </Button>
-                      {user.status === "active" && (
+                            <Ban className="h-3.5 w-3.5" />
+                          </Button>
+                        )}
+                        {user.status !== "inactive" && (
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => handleDeactivate(user.id)}
+                            title="Deactivate"
+                          >
+                            <UserX className="h-3.5 w-3.5" />
+                          </Button>
+                        )}
                         <Button
                           variant="ghost"
                           size="sm"
-                          onClick={() => handleSuspend(user.id)}
-                          title="Suspend"
+                          title="Reset Password"
+                          onClick={() => handleResetPassword(user.id)}
                         >
-                          <Ban className="h-3.5 w-3.5" />
+                          <KeyRound className="h-3.5 w-3.5" />
                         </Button>
-                      )}
-                      {user.status !== "inactive" && (
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => handleDeactivate(user.id)}
-                          title="Deactivate"
-                        >
-                          <UserX className="h-3.5 w-3.5" />
-                        </Button>
-                      )}
-                      <Button variant="ghost" size="sm" title="Reset Password">
-                        <KeyRound className="h-3.5 w-3.5" />
-                      </Button>
-                    </div>
+                      </div>
+                    </TableCell>
+                  </TableRow>
+                );
+              })}
+              {users.length === 0 && !isLoading && (
+                <TableRow>
+                  <TableCell
+                    colSpan={6}
+                    className="text-center py-8 text-muted-foreground"
+                  >
+                    No users found.
                   </TableCell>
                 </TableRow>
-              );
-            })}
-            {filteredUsers.length === 0 && (
-              <TableRow>
-                <TableCell
-                  colSpan={6}
-                  className="text-center py-8 text-muted-foreground"
-                >
-                  No users match your search.
-                </TableCell>
-              </TableRow>
-            )}
-          </TableBody>
-        </Table>
+              )}
+            </TableBody>
+          </Table>
+        )}
+
+        {/* Pagination */}
+        {usersData && usersData.totalPages > 1 && (
+          <div className="flex items-center justify-between border-t px-4 py-3">
+            <p className="text-sm text-muted-foreground">
+              Page {usersData.page} of {usersData.totalPages} ({usersData.total}{" "}
+              total)
+            </p>
+            <div className="flex gap-2">
+              <Button
+                variant="outline"
+                size="sm"
+                disabled={page <= 1}
+                onClick={() => setPage((p) => p - 1)}
+              >
+                Previous
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                disabled={page >= usersData.totalPages}
+                onClick={() => setPage((p) => p + 1)}
+              >
+                Next
+              </Button>
+            </div>
+          </div>
+        )}
       </Card>
 
       {/* Roles Reference Table (Collapsible) */}
@@ -575,6 +591,12 @@ export function UserManagement() {
                 );
               })}
             </div>
+            {inviteMutation.error && (
+              <div className="flex items-center gap-2 rounded-md bg-destructive/10 px-3 py-2 text-xs text-destructive">
+                <AlertCircle className="h-3.5 w-3.5 shrink-0" />
+                {inviteMutation.error.message || "Failed to send invitation."}
+              </div>
+            )}
             <p className="text-xs text-muted-foreground bg-muted/50 p-3 rounded-md">
               An email will be sent with a secure login link valid for 48 hours.
             </p>
@@ -587,10 +609,18 @@ export function UserManagement() {
                 disabled={
                   !inviteForm.fullName ||
                   !inviteForm.email ||
-                  inviteForm.roles.length === 0
+                  inviteForm.roles.length === 0 ||
+                  inviteMutation.isPending
                 }
               >
-                Send Invitation
+                {inviteMutation.isPending ? (
+                  <>
+                    <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                    Sending...
+                  </>
+                ) : (
+                  "Send Invitation"
+                )}
               </Button>
             </div>
           </div>
@@ -669,6 +699,7 @@ export function UserManagement() {
                 <div className="flex flex-wrap gap-2">
                   {editRoles.map((role) => {
                     const rc = USER_ROLE_CONFIG[role];
+                    if (!rc) return null;
                     return (
                       <Badge
                         key={role}
@@ -705,72 +736,40 @@ export function UserManagement() {
                     )}
                   </SelectContent>
                 </Select>
-
-                {/* Role History */}
-                {editRoleHistory.length > 0 && (
-                  <div className="space-y-1.5 pt-2">
-                    <p className="text-xs font-medium text-muted-foreground">
-                      Role History
-                    </p>
-                    {editRoleHistory.map((rh) => (
-                      <p key={rh.id} className="text-xs text-muted-foreground">
-                        {USER_ROLE_CONFIG[rh.role].label} role{" "}
-                        {rh.action} by {rh.performedBy} on{" "}
-                        {new Date(rh.performedAt).toLocaleDateString("en-US", {
-                          month: "short",
-                          day: "numeric",
-                        })}
-                      </p>
-                    ))}
-                  </div>
-                )}
               </div>
 
               <Separator />
 
-              {/* Activity Summary */}
-              <div className="space-y-3">
-                <Label>Activity Summary</Label>
-                <p className="text-sm">
-                  <span className="font-medium">{editReviewCount}</span>{" "}
-                  <span className="text-muted-foreground">
-                    queue items reviewed (Queue A + B)
-                  </span>
-                </p>
-
-                {editActivity.length > 0 && (
-                  <div className="space-y-2">
-                    <p className="text-xs font-medium text-muted-foreground">
-                      Last 5 Actions
-                    </p>
-                    <div className="space-y-1.5">
-                      {editActivity.map((act) => (
-                        <div
-                          key={act.id}
-                          className="flex items-start gap-2 text-xs"
-                        >
-                          <span className="text-muted-foreground shrink-0 w-14">
-                            {timeAgo(act.timestamp)}
-                          </span>
-                          <span>{act.action}</span>
-                          <span className="text-muted-foreground truncate">
-                            {act.entity}
-                          </span>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                )}
-              </div>
-
-              <Separator />
+              {/* Error */}
+              {updateMutation.error && (
+                <div className="flex items-center gap-2 rounded-md bg-destructive/10 px-3 py-2 text-xs text-destructive">
+                  <AlertCircle className="h-3.5 w-3.5 shrink-0" />
+                  {updateMutation.error.message || "Failed to update user."}
+                </div>
+              )}
 
               {/* Action Buttons */}
               <div className="flex flex-wrap gap-2">
-                <Button onClick={handleSaveEdit} className="flex-1">
-                  Save Changes
+                <Button
+                  onClick={handleSaveEdit}
+                  className="flex-1"
+                  disabled={updateMutation.isPending}
+                >
+                  {updateMutation.isPending ? (
+                    <>
+                      <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                      Saving...
+                    </>
+                  ) : (
+                    "Save Changes"
+                  )}
                 </Button>
-                <Button variant="outline" size="sm">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => handleResetPassword(editUser.id)}
+                  disabled={resetPasswordMutation.isPending}
+                >
                   <KeyRound className="h-3.5 w-3.5 mr-1" />
                   Reset Password
                 </Button>
