@@ -84,10 +84,18 @@ export function TagDimensionsPanel({
 
           return (
             <div key={dim}>
-              <button
+              <div
+                role="button"
+                tabIndex={0}
                 onClick={() => toggleSection(dim)}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter" || e.key === " ") {
+                    e.preventDefault();
+                    toggleSection(dim);
+                  }
+                }}
                 className={cn(
-                  "flex w-full items-center gap-2 rounded-md px-2 py-2 text-sm font-medium transition-colors hover:bg-muted/50",
+                  "flex w-full cursor-pointer items-center gap-2 rounded-md px-2 py-2 text-sm font-medium transition-colors hover:bg-muted/50",
                   isExpanded && "text-foreground",
                   !isExpanded && "text-muted-foreground"
                 )}
@@ -113,7 +121,7 @@ export function TagDimensionsPanel({
                 >
                   <Plus className="h-3.5 w-3.5" />
                 </Button>
-              </button>
+              </div>
 
               {isExpanded && (
                 <div className="ml-2 border-l pl-1">
