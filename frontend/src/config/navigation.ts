@@ -115,6 +115,7 @@ export const navigation: NavSection[] = [
 ];
 
 export function getPageTitle(pathname: string): string {
+  if (pathname === "/profile") return "My Profile";
   for (const section of navigation) {
     for (const item of section.items) {
       if (pathname === item.href || pathname.startsWith(item.href + "/")) {

@@ -2,6 +2,7 @@
 
 import { useState, useCallback } from "react";
 import { usePathname } from "next/navigation";
+import Link from "next/link";
 import { useSession, signOut } from "next-auth/react";
 import { Bell, Menu, Search, LogOut, User } from "lucide-react";
 import { getPageTitle } from "@/config/navigation";
@@ -128,9 +129,11 @@ export function Header() {
             <p className="text-xs text-muted-foreground">{userEmail}</p>
           </DropdownMenuLabel>
           <DropdownMenuSeparator />
-          <DropdownMenuItem>
-            <User className="mr-2 h-4 w-4" />
-            Profile
+          <DropdownMenuItem asChild>
+            <Link href="/profile">
+              <User className="mr-2 h-4 w-4" />
+              Profile
+            </Link>
           </DropdownMenuItem>
           <DropdownMenuSeparator />
           <DropdownMenuItem
