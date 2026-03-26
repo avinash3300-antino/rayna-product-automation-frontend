@@ -1,6 +1,8 @@
 "use client";
 
+import { useState, useCallback } from "react";
 import { usePathname } from "next/navigation";
+import Link from "next/link";
 import { useSession, signOut } from "next-auth/react";
 import { Bell, Menu, Search, LogOut, User } from "lucide-react";
 import { getPageTitle } from "@/config/navigation";
@@ -22,11 +24,28 @@ import {
   SheetTitle,
 } from "@/components/ui/sheet";
 import { MobileSidebar } from "./mobile-sidebar";
+import { NotificationsDrawer } from "@/components/monitoring/notifications-drawer";
+import { MOCK_NOTIFICATIONS } from "@/lib/mock-monitoring-data";
+import type { Notification } from "@/types/monitoring";
 
 export function Header() {
   const pathname = usePathname();
   const { data: session } = useSession();
   const pageTitle = getPageTitle(pathname);
+  const [notifications, setNotifications] =
+    useState<Notification[]>(MOCK_NOTIFICATIONS);
+
+  const unreadCount = notifications.filter((n) => !n.read).length;
+
+  const handleMarkAllRead = useCallback(() => {
+    setNotifications((prev) => prev.map((n) => ({ ...n, read: true })));
+  }, []);
+
+  const handleMarkRead = useCallback((id: string) => {
+    setNotifications((prev) =>
+      prev.map((n) => (n.id === id ? { ...n, read: true } : n))
+    );
+  }, []);
 
   const userName = session?.user?.name || "User";
   const userEmail = session?.user?.email || "";
@@ -69,13 +88,29 @@ export function Header() {
       </div>
 
       {/* Notifications */}
-      <Button variant="ghost" size="icon" className="relative">
-        <Bell className="h-5 w-5" />
-        <span className="absolute -top-0.5 -right-0.5 flex h-4 w-4 items-center justify-center rounded-full bg-gold text-[9px] font-bold text-navy">
-          3
-        </span>
-        <span className="sr-only">Notifications</span>
-      </Button>
+      <Sheet>
+        <SheetTrigger asChild>
+          <Button variant="ghost" size="icon" className="relative">
+            <Bell className="h-5 w-5" />
+            {unreadCount > 0 && (
+              <span className="absolute -top-0.5 -right-0.5 flex h-4 w-4 items-center justify-center rounded-full bg-gold text-[9px] font-bold text-navy">
+                {unreadCount}
+              </span>
+            )}
+            <span className="sr-only">Notifications</span>
+          </Button>
+        </SheetTrigger>
+        <SheetContent
+          side="right"
+          className="w-[380px] sm:w-[420px] p-0 bg-background border-border/50"
+        >
+          <NotificationsDrawer
+            notifications={notifications}
+            onMarkAllRead={handleMarkAllRead}
+            onMarkRead={handleMarkRead}
+          />
+        </SheetContent>
+      </Sheet>
 
       {/* User menu */}
       <DropdownMenu>
@@ -94,9 +129,11 @@ export function Header() {
             <p className="text-xs text-muted-foreground">{userEmail}</p>
           </DropdownMenuLabel>
           <DropdownMenuSeparator />
-          <DropdownMenuItem>
-            <User className="mr-2 h-4 w-4" />
-            Profile
+          <DropdownMenuItem asChild>
+            <Link href="/profile">
+              <User className="mr-2 h-4 w-4" />
+              Profile
+            </Link>
           </DropdownMenuItem>
           <DropdownMenuSeparator />
           <DropdownMenuItem

@@ -23,5 +23,6 @@ export const config = {
     "/monitoring/:path*",
     "/users/:path*",
     "/settings/:path*",
+    "/profile/:path*",
   ],
 };

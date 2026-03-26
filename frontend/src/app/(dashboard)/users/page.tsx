@@ -1,0 +1,42 @@
+"use client";
+
+import { useSession } from "next-auth/react";
+import { Lock } from "lucide-react";
+import { Card } from "@/components/ui/card";
+import { UserManagement } from "@/components/users/user-management";
+
+function AccessDenied() {
+  return (
+    <div className="flex items-center justify-center min-h-[60vh]">
+      <Card className="p-12 text-center max-w-md">
+        <div className="mx-auto mb-6 flex h-16 w-16 items-center justify-center rounded-full bg-red-500/10">
+          <Lock className="h-8 w-8 text-red-500" />
+        </div>
+        <h2 className="text-xl font-bold mb-2">Access Denied</h2>
+        <p className="text-sm text-muted-foreground">
+          You do not have permission to access User Management. This page is
+          restricted to administrators only. Contact your system administrator
+          if you believe this is an error.
+        </p>
+      </Card>
+    </div>
+  );
+}
+
+// Simulated admin check — in production this would check actual user roles
+function useIsAdmin(): boolean {
+  const { data: session } = useSession();
+  // For demo purposes, treat all authenticated users as admin
+  // In production: check session.user.roles?.includes("admin")
+  return !!session?.user;
+}
+
+export default function UsersPage() {
+  const isAdmin = useIsAdmin();
+
+  if (!isAdmin) {
+    return <AccessDenied />;
+  }
+
+  return <UserManagement />;
+}
