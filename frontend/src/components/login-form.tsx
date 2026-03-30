@@ -1,9 +1,10 @@
 "use client";
 
-import { useState } from "react";
-import { signIn } from "next-auth/react";
+import { useEffect, useState } from "react";
+import { signIn, useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
-import { Eye, EyeOff, AlertCircle } from "lucide-react";
+import { toast } from "sonner";
+import { Eye, EyeOff } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -86,16 +87,26 @@ function PipelineGraphic() {
 
 export function LoginForm() {
   const router = useRouter();
+  const { data: session, status } = useSession();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [rememberMe, setRememberMe] = useState(false);
-  const [error, setError] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+
+  // Redirect authenticated users to dashboard
+  useEffect(() => {
+    if (status === "authenticated" && session && !session.error) {
+      router.replace("/dashboard");
+    }
+  }, [status, session, router]);
+
+  if (status === "authenticated" && session && !session.error) {
+    return null;
+  }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setError("");
     setIsLoading(true);
 
     try {
@@ -106,12 +117,12 @@ export function LoginForm() {
       });
 
       if (result?.error) {
-        setError("Invalid email or password. Please try again.");
+        toast.error("Invalid email or password. Please try again.");
       } else if (result?.ok) {
         router.push("/dashboard");
       }
     } catch {
-      setError("An unexpected error occurred. Please try again.");
+      toast.error("An unexpected error occurred. Please try again.");
     } finally {
       setIsLoading(false);
     }
@@ -173,14 +184,6 @@ export function LoginForm() {
               Enter your credentials to access the dashboard
             </p>
           </div>
-
-          {/* Error alert */}
-          {error && (
-            <div className="flex items-center gap-2 rounded-md bg-destructive/10 px-4 py-3 text-sm text-destructive">
-              <AlertCircle className="h-4 w-4 shrink-0" />
-              {error}
-            </div>
-          )}
 
           <form onSubmit={handleSubmit} className="space-y-5">
             {/* Email */}

@@ -1,6 +1,7 @@
 "use client";
 
-import { useState, useMemo, useCallback } from "react";
+import { useState, useMemo, useCallback, useEffect } from "react";
+import { toast } from "sonner";
 import {
   Plus,
   Search,
@@ -17,7 +18,6 @@ import {
   X,
   Shield,
   Loader2,
-  AlertCircle,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -132,6 +132,13 @@ export function UserManagement() {
   const updateMutation = useUpdateUser();
   const resetPasswordMutation = useResetUserPassword();
 
+  // Show toast on query error
+  useEffect(() => {
+    if (error) {
+      toast.error("Failed to load users. Please try again.");
+    }
+  }, [error]);
+
   // Stats derived from current data
   const stats = useMemo(() => {
     const total = usersData?.total ?? 0;
@@ -163,6 +170,10 @@ export function UserManagement() {
         onSuccess: () => {
           setInviteForm({ fullName: "", email: "", roles: [] });
           setInviteOpen(false);
+          toast.success("Invitation sent successfully.");
+        },
+        onError: (err) => {
+          toast.error(err.message || "Failed to send invitation.");
         },
       }
     );
@@ -190,6 +201,10 @@ export function UserManagement() {
       {
         onSuccess: () => {
           setEditUser(null);
+          toast.success("User updated successfully.");
+        },
+        onError: (err) => {
+          toast.error(err.message || "Failed to update user.");
         },
       }
     );
@@ -197,27 +212,36 @@ export function UserManagement() {
 
   const handleSuspend = useCallback(
     (userId: string) => {
-      updateMutation.mutate({
-        userId,
-        data: { status: "suspended" },
-      });
+      updateMutation.mutate(
+        { userId, data: { status: "suspended" } },
+        {
+          onSuccess: () => toast.success("User suspended."),
+          onError: (err) => toast.error(err.message || "Failed to suspend user."),
+        }
+      );
     },
     [updateMutation]
   );
 
   const handleDeactivate = useCallback(
     (userId: string) => {
-      updateMutation.mutate({
-        userId,
-        data: { status: "inactive" },
-      });
+      updateMutation.mutate(
+        { userId, data: { status: "inactive" } },
+        {
+          onSuccess: () => toast.success("User deactivated."),
+          onError: (err) => toast.error(err.message || "Failed to deactivate user."),
+        }
+      );
     },
     [updateMutation]
   );
 
   const handleResetPassword = useCallback(
     (userId: string) => {
-      resetPasswordMutation.mutate(userId);
+      resetPasswordMutation.mutate(userId, {
+        onSuccess: () => toast.success("Password reset email sent."),
+        onError: (err) => toast.error(err.message || "Failed to reset password."),
+      });
     },
     [resetPasswordMutation]
   );
@@ -313,14 +337,6 @@ export function UserManagement() {
           </div>
         </Card>
       </div>
-
-      {/* Error State */}
-      {error && (
-        <div className="flex items-center gap-2 rounded-md bg-destructive/10 px-4 py-3 text-sm text-destructive">
-          <AlertCircle className="h-4 w-4 shrink-0" />
-          Failed to load users. Please try again.
-        </div>
-      )}
 
       {/* Users Table */}
       <Card>
@@ -591,12 +607,6 @@ export function UserManagement() {
                 );
               })}
             </div>
-            {inviteMutation.error && (
-              <div className="flex items-center gap-2 rounded-md bg-destructive/10 px-3 py-2 text-xs text-destructive">
-                <AlertCircle className="h-3.5 w-3.5 shrink-0" />
-                {inviteMutation.error.message || "Failed to send invitation."}
-              </div>
-            )}
             <p className="text-xs text-muted-foreground bg-muted/50 p-3 rounded-md">
               An email will be sent with a secure login link valid for 48 hours.
             </p>
@@ -739,14 +749,6 @@ export function UserManagement() {
               </div>
 
               <Separator />
-
-              {/* Error */}
-              {updateMutation.error && (
-                <div className="flex items-center gap-2 rounded-md bg-destructive/10 px-3 py-2 text-xs text-destructive">
-                  <AlertCircle className="h-3.5 w-3.5 shrink-0" />
-                  {updateMutation.error.message || "Failed to update user."}
-                </div>
-              )}
 
               {/* Action Buttons */}
               <div className="flex flex-wrap gap-2">
