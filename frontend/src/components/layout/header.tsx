@@ -9,7 +9,7 @@ import { getPageTitle } from "@/config/navigation";
 import { useLogout } from "@/hooks/api";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -51,6 +51,7 @@ export function Header() {
   const logoutMutation = useLogout();
   const userName = session?.user?.fullName || session?.user?.name || "User";
   const userEmail = session?.user?.email || "";
+  const userPicture = session?.user?.profilePictureUrl;
   const userInitials = userName
     .split(" ")
     .map((n) => n[0])
@@ -119,6 +120,7 @@ export function Header() {
         <DropdownMenuTrigger asChild>
           <Button variant="ghost" size="icon" className="rounded-full">
             <Avatar className="h-8 w-8">
+              {userPicture && <AvatarImage src={userPicture} alt={userName} />}
               <AvatarFallback className="bg-navy text-white text-xs">
                 {userInitials}
               </AvatarFallback>

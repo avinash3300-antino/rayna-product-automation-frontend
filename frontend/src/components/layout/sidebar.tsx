@@ -14,7 +14,7 @@ import { navigation, type NavItem } from "@/config/navigation";
 import { useSidebarStore } from "@/store/sidebar-store";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Badge } from "@/components/ui/badge";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Separator } from "@/components/ui/separator";
 import {
   Tooltip,
@@ -90,6 +90,7 @@ export function Sidebar() {
   const logoutMutation = useLogout();
   const isAdmin = session?.user?.roles?.includes("admin") ?? false;
   const userName = session?.user?.fullName || session?.user?.name || "User";
+  const userPicture = session?.user?.profilePictureUrl;
   const userInitials = userName
     .split(" ")
     .map((n) => n[0])
@@ -170,6 +171,7 @@ export function Sidebar() {
             )}
           >
             <Avatar className="h-8 w-8 shrink-0">
+              {userPicture && <AvatarImage src={userPicture} alt={userName} />}
               <AvatarFallback className="bg-gold/20 text-gold text-xs">
                 {userInitials}
               </AvatarFallback>

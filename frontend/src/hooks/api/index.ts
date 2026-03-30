@@ -10,7 +10,14 @@ export {
 export {
   useCurrentUser,
   useUpdateProfile,
+  useUploadProfilePicture,
+  useDeleteProfilePicture,
   useChangePassword,
   useMyActivity,
 } from "./use-profile";
 export { useLogout } from "./use-auth";
+export {
+  useSessions,
+  useRevokeSession,
+  useRevokeAllSessions,
+} from "./use-sessions";

@@ -54,6 +54,47 @@ export function useUpdateProfile() {
   });
 }
 
+export function useUploadProfilePicture() {
+  const api = useApiClient();
+  const queryClient = useQueryClient();
+  const { update: updateSession } = useSession();
+
+  return useMutation({
+    mutationFn: async (file: File) => {
+      const formData = new FormData();
+      formData.append("file", file);
+      const raw = await api.upload<BackendUserResponse>(
+        "/api/v1/users/me/profile-picture",
+        formData
+      );
+      return transformUserResponse(raw);
+    },
+    onSuccess: (updatedUser) => {
+      queryClient.setQueryData<AppUser>(queryKeys.auth.me, updatedUser);
+      updateSession({ profilePictureUrl: updatedUser.profilePictureUrl });
+    },
+  });
+}
+
+export function useDeleteProfilePicture() {
+  const api = useApiClient();
+  const queryClient = useQueryClient();
+  const { update: updateSession } = useSession();
+
+  return useMutation({
+    mutationFn: async () => {
+      const raw = await api.delete<BackendUserResponse>(
+        "/api/v1/users/me/profile-picture"
+      );
+      return transformUserResponse(raw);
+    },
+    onSuccess: (updatedUser) => {
+      queryClient.setQueryData<AppUser>(queryKeys.auth.me, updatedUser);
+      updateSession({ profilePictureUrl: updatedUser.profilePictureUrl });
+    },
+  });
+}
+
 export function useChangePassword() {
   const api = useApiClient();
 

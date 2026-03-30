@@ -15,7 +15,12 @@ import {
   Globe,
   Loader2,
 } from "lucide-react";
-import { useChangePassword } from "@/hooks/api";
+import {
+  useChangePassword,
+  useSessions,
+  useRevokeSession,
+  useRevokeAllSessions,
+} from "@/hooks/api";
 import {
   Card,
   CardContent,
@@ -42,7 +47,15 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
-import type { ActiveSession, ChangePasswordForm, PasswordStrength } from "@/types/profile";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import type { ChangePasswordForm, PasswordStrength } from "@/types/profile";
 import { formatRelativeTime } from "@/lib/format";
 
 function calcPasswordStrength(pw: string): {
@@ -64,9 +77,9 @@ function calcPasswordStrength(pw: string): {
   return { strength: "very-strong", score: 100, label: "Very Strong", color: "bg-green-500" };
 }
 
-function getDeviceIcon(device: string) {
-  const lower = device.toLowerCase();
-  if (lower.includes("iphone") || lower.includes("android") || lower.includes("phone")) {
+function getDeviceIcon(device: string | null) {
+  const lower = (device ?? "").toLowerCase();
+  if (lower.includes("iphone") || lower.includes("android") || lower.includes("phone") || lower.includes("mobile")) {
     return <Smartphone className="h-4 w-4 text-muted-foreground" />;
   }
   if (lower.includes("mac") || lower.includes("laptop")) {
@@ -76,11 +89,10 @@ function getDeviceIcon(device: string) {
 }
 
 interface SecurityTabProps {
-  initialSessions: ActiveSession[];
   onDirty: () => void;
 }
 
-export function SecurityTab({ initialSessions, onDirty }: SecurityTabProps) {
+export function SecurityTab({ onDirty }: SecurityTabProps) {
   const [form, setForm] = useState<ChangePasswordForm>({
     currentPassword: "",
     newPassword: "",
@@ -89,8 +101,13 @@ export function SecurityTab({ initialSessions, onDirty }: SecurityTabProps) {
   const [showCurrent, setShowCurrent] = useState(false);
   const [showNew, setShowNew] = useState(false);
   const [showConfirm, setShowConfirm] = useState(false);
-  const [sessions, setSessions] = useState<ActiveSession[]>(initialSessions);
+  const [revokeTarget, setRevokeTarget] = useState<string | null>(null);
+  const [showRevokeAllDialog, setShowRevokeAllDialog] = useState(false);
+
   const changePasswordMutation = useChangePassword();
+  const { data: sessions, isLoading: sessionsLoading } = useSessions();
+  const revokeSessionMutation = useRevokeSession();
+  const revokeAllMutation = useRevokeAllSessions();
 
   const pw = form.newPassword;
   const strength = useMemo(() => calcPasswordStrength(pw), [pw]);
@@ -108,12 +125,32 @@ export function SecurityTab({ initialSessions, onDirty }: SecurityTabProps) {
   const canUpdatePassword =
     form.currentPassword.length > 0 && allRulesPass && passwordsMatch;
 
-  function revokeSession(id: string) {
-    setSessions((prev) => prev.filter((s) => s.id !== id));
+  const otherSessions = sessions?.filter((s) => !s.is_current) ?? [];
+
+  function handleRevokeSession(sessionId: string) {
+    revokeSessionMutation.mutate(sessionId, {
+      onSuccess: () => {
+        toast.success("Session revoked successfully.");
+        setRevokeTarget(null);
+      },
+      onError: (err) => {
+        toast.error(err.message || "Failed to revoke session.");
+        setRevokeTarget(null);
+      },
+    });
   }
 
-  function revokeAllOther() {
-    setSessions((prev) => prev.filter((s) => s.isCurrent));
+  function handleRevokeAll() {
+    revokeAllMutation.mutate(undefined, {
+      onSuccess: () => {
+        toast.success("All other sessions have been signed out.");
+        setShowRevokeAllDialog(false);
+      },
+      onError: (err) => {
+        toast.error(err.message || "Failed to sign out other devices.");
+        setShowRevokeAllDialog(false);
+      },
+    });
   }
 
   return (
@@ -291,73 +328,155 @@ export function SecurityTab({ initialSessions, onDirty }: SecurityTabProps) {
                 </CardDescription>
               </div>
             </div>
-            {sessions.filter((s) => !s.isCurrent).length > 0 && (
+            {otherSessions.length > 0 && (
               <Button
                 variant="destructive"
                 size="sm"
-                onClick={revokeAllOther}
+                disabled={revokeAllMutation.isPending}
+                onClick={() => setShowRevokeAllDialog(true)}
               >
-                Sign out all other devices
+                {revokeAllMutation.isPending ? (
+                  <>
+                    <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                    Signing out...
+                  </>
+                ) : (
+                  "Sign out all other devices"
+                )}
               </Button>
             )}
           </div>
         </CardHeader>
         <CardContent>
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Device</TableHead>
-                <TableHead>Browser</TableHead>
-                <TableHead className="hidden sm:table-cell">IP Address</TableHead>
-                <TableHead className="hidden md:table-cell">Location</TableHead>
-                <TableHead>Last Active</TableHead>
-                <TableHead className="text-right">Action</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {sessions.map((session) => (
-                <TableRow key={session.id}>
-                  <TableCell>
-                    <div className="flex items-center gap-2">
-                      {getDeviceIcon(session.device)}
-                      <span className="text-sm">{session.device}</span>
-                    </div>
-                  </TableCell>
-                  <TableCell className="text-sm">{session.browser}</TableCell>
-                  <TableCell className="hidden sm:table-cell text-sm font-mono text-muted-foreground">
-                    {session.ip}
-                  </TableCell>
-                  <TableCell className="hidden md:table-cell text-sm">
-                    {session.location}
-                  </TableCell>
-                  <TableCell className="text-sm text-muted-foreground">
-                    {formatRelativeTime(session.lastActive)}
-                  </TableCell>
-                  <TableCell className="text-right">
-                    {session.isCurrent ? (
-                      <Badge
-                        variant="outline"
-                        className="bg-emerald-500/15 text-emerald-600 border-emerald-500/25 text-[10px]"
-                      >
-                        This device
-                      </Badge>
-                    ) : (
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        className="text-destructive hover:text-destructive h-7 text-xs"
-                        onClick={() => revokeSession(session.id)}
-                      >
-                        Revoke
-                      </Button>
-                    )}
-                  </TableCell>
+          {sessionsLoading ? (
+            <div className="flex items-center justify-center py-8">
+              <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
+              <span className="ml-2 text-sm text-muted-foreground">Loading sessions...</span>
+            </div>
+          ) : sessions && sessions.length > 0 ? (
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Device</TableHead>
+                  <TableHead>Browser</TableHead>
+                  <TableHead className="hidden sm:table-cell">IP Address</TableHead>
+                  <TableHead className="hidden md:table-cell">Location</TableHead>
+                  <TableHead>Last Active</TableHead>
+                  <TableHead className="text-right">Action</TableHead>
                 </TableRow>
-              ))}
-            </TableBody>
-          </Table>
+              </TableHeader>
+              <TableBody>
+                {sessions.map((session) => (
+                  <TableRow key={session.id}>
+                    <TableCell>
+                      <div className="flex items-center gap-2">
+                        {getDeviceIcon(session.device)}
+                        <span className="text-sm">{session.device || "Unknown"}</span>
+                      </div>
+                    </TableCell>
+                    <TableCell className="text-sm">{session.browser || "Unknown"}</TableCell>
+                    <TableCell className="hidden sm:table-cell text-sm font-mono text-muted-foreground">
+                      {session.ip || "—"}
+                    </TableCell>
+                    <TableCell className="hidden md:table-cell text-sm">
+                      {session.location || "—"}
+                    </TableCell>
+                    <TableCell className="text-sm text-muted-foreground">
+                      {formatRelativeTime(session.last_active)}
+                    </TableCell>
+                    <TableCell className="text-right">
+                      {session.is_current ? (
+                        <Badge
+                          variant="outline"
+                          className="bg-emerald-500/15 text-emerald-600 border-emerald-500/25 text-[10px]"
+                        >
+                          This device
+                        </Badge>
+                      ) : (
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="text-destructive hover:text-destructive h-7 text-xs"
+                          disabled={revokeSessionMutation.isPending}
+                          onClick={() => setRevokeTarget(session.id)}
+                        >
+                          Revoke
+                        </Button>
+                      )}
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          ) : (
+            <p className="text-sm text-muted-foreground text-center py-4">
+              No active sessions found.
+            </p>
+          )}
         </CardContent>
       </Card>
+
+      {/* Revoke Single Session Confirmation */}
+      <Dialog open={!!revokeTarget} onOpenChange={(open) => !open && setRevokeTarget(null)}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Revoke Session</DialogTitle>
+            <DialogDescription>
+              Are you sure you want to revoke this session? The device will be signed out immediately.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setRevokeTarget(null)}>
+              Cancel
+            </Button>
+            <Button
+              variant="destructive"
+              disabled={revokeSessionMutation.isPending}
+              onClick={() => revokeTarget && handleRevokeSession(revokeTarget)}
+            >
+              {revokeSessionMutation.isPending ? (
+                <>
+                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                  Revoking...
+                </>
+              ) : (
+                "Revoke"
+              )}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Revoke All Sessions Confirmation */}
+      <Dialog open={showRevokeAllDialog} onOpenChange={setShowRevokeAllDialog}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Sign Out All Other Devices</DialogTitle>
+            <DialogDescription>
+              This will sign out all sessions except your current one. All other devices will need to log in again.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setShowRevokeAllDialog(false)}>
+              Cancel
+            </Button>
+            <Button
+              variant="destructive"
+              disabled={revokeAllMutation.isPending}
+              onClick={handleRevokeAll}
+            >
+              {revokeAllMutation.isPending ? (
+                <>
+                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                  Signing out...
+                </>
+              ) : (
+                "Sign Out All"
+              )}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
 
       {/* Two-Factor Authentication (Placeholder) */}
       <TooltipProvider>

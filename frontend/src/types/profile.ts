@@ -20,12 +20,12 @@ export interface ProfileStats {
 // ---- Active Session ----
 export interface ActiveSession {
   id: string;
-  device: string;
-  browser: string;
-  ip: string;
-  location: string;
-  lastActive: string;
-  isCurrent: boolean;
+  device: string | null;
+  browser: string | null;
+  ip: string | null;
+  location: string | null;
+  last_active: string;
+  is_current: boolean;
 }
 
 // ---- Change Password Form ----

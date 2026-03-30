@@ -10,6 +10,7 @@ declare module "next-auth" {
     accessToken: string;
     roles: string[];
     status: string;
+    profilePictureUrl: string | null;
   }
 
   interface Session {
@@ -20,6 +21,7 @@ declare module "next-auth" {
       name: string;
       roles: UserRole[];
       status: UserStatus;
+      profilePictureUrl: string | null;
     };
     accessToken: string;
     error?: string;
@@ -33,6 +35,7 @@ declare module "next-auth/jwt" {
     fullName: string;
     roles: UserRole[];
     status: UserStatus;
+    profilePictureUrl: string | null;
     accessToken: string;
     accessTokenExpiresAt: number;
     error?: string;

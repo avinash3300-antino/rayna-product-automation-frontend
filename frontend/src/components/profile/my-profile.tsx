@@ -20,7 +20,6 @@ import { ActivityTab } from "./activity-tab";
 import { useCurrentUser, useUpdateProfile } from "@/hooks/api";
 import {
   MOCK_PROFILE_STATS,
-  MOCK_ACTIVE_SESSIONS,
   MOCK_NOTIFICATION_PREFERENCES,
   MOCK_UI_PREFERENCES,
 } from "@/lib/mock-profile-data";
@@ -170,7 +169,6 @@ export function MyProfile() {
 
             <TabsContent value="security">
               <SecurityTab
-                initialSessions={MOCK_ACTIVE_SESSIONS}
                 onDirty={markDirty}
               />
             </TabsContent>

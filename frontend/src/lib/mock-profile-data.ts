@@ -1,7 +1,6 @@
 import type {
   PersonalInfo,
   ProfileStats,
-  ActiveSession,
   NotificationPreference,
   UIPreferences,
   ProfileActivityEntry,
@@ -24,36 +23,6 @@ export const MOCK_PROFILE_STATS: ProfileStats = {
   productsApproved: 312,
   jobsTriggered: 56,
 };
-
-export const MOCK_ACTIVE_SESSIONS: ActiveSession[] = [
-  {
-    id: "sess-001",
-    device: "Windows PC",
-    browser: "Chrome 122",
-    ip: "192.168.1.100",
-    location: "Dubai, UAE",
-    lastActive: new Date(Date.now() - 5 * 60 * 1000).toISOString(),
-    isCurrent: true,
-  },
-  {
-    id: "sess-002",
-    device: "iPhone 15",
-    browser: "Safari 17",
-    ip: "10.0.0.45",
-    location: "Dubai, UAE",
-    lastActive: new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString(),
-    isCurrent: false,
-  },
-  {
-    id: "sess-003",
-    device: "MacBook Pro",
-    browser: "Firefox 123",
-    ip: "172.16.0.12",
-    location: "Abu Dhabi, UAE",
-    lastActive: new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString(),
-    isCurrent: false,
-  },
-];
 
 export const MOCK_NOTIFICATION_PREFERENCES: NotificationPreference[] = [
   { id: "np-1", event: "New Queue B items assigned to me", inApp: true, email: true },

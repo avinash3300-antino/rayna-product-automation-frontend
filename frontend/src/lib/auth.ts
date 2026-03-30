@@ -30,6 +30,7 @@ async function refreshAccessToken(token: JWT): Promise<JWT> {
       fullName: data.user.full_name,
       roles: data.user.roles as UserRole[],
       status: data.user.status as UserStatus,
+      profilePictureUrl: data.user.profile_picture_url ?? null,
       error: undefined,
     };
   } catch {
@@ -71,6 +72,7 @@ export const authOptions: NextAuthOptions = {
             accessToken: data.access_token,
             roles: data.user.roles,
             status: data.user.status,
+            profilePictureUrl: data.user.profile_picture_url ?? null,
           };
         } catch {
           return null;
@@ -79,7 +81,7 @@ export const authOptions: NextAuthOptions = {
     }),
   ],
   callbacks: {
-    async jwt({ token, user }) {
+    async jwt({ token, user, trigger, session: updateData }) {
       // Initial sign-in
       if (user) {
         token.id = user.id;
@@ -89,6 +91,15 @@ export const authOptions: NextAuthOptions = {
         token.accessTokenExpiresAt = Date.now() + TOKEN_LIFETIME_MS;
         token.roles = user.roles as UserRole[];
         token.status = user.status as UserStatus;
+        token.profilePictureUrl = user.profilePictureUrl ?? null;
+        return token;
+      }
+
+      // Client-side session update (e.g. after profile picture change)
+      if (trigger === "update" && updateData) {
+        if ("profilePictureUrl" in updateData) {
+          token.profilePictureUrl = updateData.profilePictureUrl ?? null;
+        }
         return token;
       }
 
@@ -108,6 +119,7 @@ export const authOptions: NextAuthOptions = {
         name: token.fullName,
         roles: token.roles,
         status: token.status,
+        profilePictureUrl: token.profilePictureUrl,
       };
       session.accessToken = token.accessToken;
       session.error = token.error;

@@ -14,6 +14,7 @@ export interface BackendUserResponse {
   department: string | null;
   phone: string | null;
   timezone: string | null;
+  profile_picture_url: string | null;
   status: string;
   last_login_at: string | null;
   created_at: string;
@@ -25,6 +26,7 @@ export interface BackendUserBrief {
   id: string;
   email: string;
   full_name: string;
+  profile_picture_url: string | null;
   roles: string[];
   status: string;
 }

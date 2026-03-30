@@ -21,8 +21,9 @@ async function fetchApi<T>(
 ): Promise<T> {
   const { token, ...fetchOptions } = options || {};
 
+  const isFormData = fetchOptions.body instanceof FormData;
   const headers: Record<string, string> = {
-    "Content-Type": "application/json",
+    ...(isFormData ? {} : { "Content-Type": "application/json" }),
     ...(fetchOptions.headers as Record<string, string>),
   };
 
@@ -82,6 +83,13 @@ export function createApiClient(token?: string) {
       })),
     delete: <T>(endpoint: string, opts?: RequestInit) =>
       fetchApi<T>(endpoint, withToken({ method: "DELETE", ...opts })),
+    upload: <T>(endpoint: string, formData: FormData) =>
+      fetchApi<T>(endpoint, {
+        method: "POST",
+        body: formData,
+        token,
+        headers: {},
+      }),
   };
 }
 
