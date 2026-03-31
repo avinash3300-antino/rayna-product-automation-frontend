@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useSession } from "next-auth/react";
-import { useLogout } from "@/hooks/api";
+import { useState } from "react";
 import { LogOut } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { navigation } from "@/config/navigation";
@@ -11,12 +11,13 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { SheetClose } from "@/components/ui/sheet";
+import { LogoutConfirmDialog } from "./logout-confirm-dialog";
 
 export function MobileSidebar() {
   const pathname = usePathname();
   const { data: session } = useSession();
 
-  const logoutMutation = useLogout();
+  const [showLogoutDialog, setShowLogoutDialog] = useState(false);
   const isAdmin = session?.user?.roles?.includes("admin") ?? false;
   const userName = session?.user?.fullName || session?.user?.name || "User";
   const userPicture = session?.user?.profilePictureUrl;
@@ -115,13 +116,18 @@ export function MobileSidebar() {
             </Badge>
           </div>
           <button
-            onClick={() => logoutMutation.mutate()}
+            onClick={() => setShowLogoutDialog(true)}
             className="text-white/40 hover:text-white transition-colors"
           >
             <LogOut className="h-4 w-4" />
           </button>
         </div>
       </div>
+
+      <LogoutConfirmDialog
+        open={showLogoutDialog}
+        onOpenChange={setShowLogoutDialog}
+      />
     </div>
   );
 }

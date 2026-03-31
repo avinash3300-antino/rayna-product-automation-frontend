@@ -1,6 +1,7 @@
 "use client";
 
-import { useState, useCallback, useMemo, useRef } from "react";
+import { useCallback, useMemo, useRef, useState } from "react";
+import { useSearchParams, useRouter } from "next/navigation";
 import {
   Save,
   CheckCircle,
@@ -25,7 +26,16 @@ import {
 } from "@/lib/mock-profile-data";
 import type { PersonalInfo } from "@/types/profile";
 
+const VALID_TABS = ["personal", "security", "preferences", "activity"] as const;
+
 export function MyProfile() {
+  const searchParams = useSearchParams();
+  const router = useRouter();
+  const tabParam = searchParams.get("tab");
+  const activeTab = VALID_TABS.includes(tabParam as (typeof VALID_TABS)[number])
+    ? tabParam!
+    : "personal";
+
   const { data: currentUser, isLoading } = useCurrentUser();
   const updateProfileMutation = useUpdateProfile();
   const [isDirty, setIsDirty] = useState(false);
@@ -125,7 +135,20 @@ export function MyProfile() {
 
         {/* Right Column — Tabs */}
         <div className="lg:col-span-2">
-          <Tabs defaultValue="personal" className="space-y-6">
+          <Tabs
+            value={activeTab}
+            onValueChange={(tab) => {
+              const params = new URLSearchParams(searchParams.toString());
+              if (tab === "personal") {
+                params.delete("tab");
+              } else {
+                params.set("tab", tab);
+              }
+              const qs = params.toString();
+              router.replace(`/profile${qs ? `?${qs}` : ""}`, { scroll: false });
+            }}
+            className="space-y-6"
+          >
             <TabsList className="h-auto flex-wrap gap-1 bg-muted/50 p-1">
               <TabsTrigger
                 value="personal"

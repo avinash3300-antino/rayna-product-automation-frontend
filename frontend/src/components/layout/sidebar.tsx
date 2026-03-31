@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useSession } from "next-auth/react";
-import { useLogout } from "@/hooks/api";
+import { useState } from "react";
 import {
   ChevronLeft,
   ChevronRight,
@@ -22,6 +22,7 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+import { LogoutConfirmDialog } from "./logout-confirm-dialog";
 
 function NavItemLink({
   item,
@@ -87,7 +88,7 @@ export function Sidebar() {
   const { data: session } = useSession();
   const { collapsed, toggle } = useSidebarStore();
 
-  const logoutMutation = useLogout();
+  const [showLogoutDialog, setShowLogoutDialog] = useState(false);
   const isAdmin = session?.user?.roles?.includes("admin") ?? false;
   const userName = session?.user?.fullName || session?.user?.name || "User";
   const userPicture = session?.user?.profilePictureUrl;
@@ -193,7 +194,7 @@ export function Sidebar() {
               <Tooltip delayDuration={0}>
                 <TooltipTrigger asChild>
                   <button
-                    onClick={() => logoutMutation.mutate()}
+                    onClick={() => setShowLogoutDialog(true)}
                     className="text-white/40 hover:text-white transition-colors"
                   >
                     <LogOut className="h-4 w-4" />
@@ -203,7 +204,7 @@ export function Sidebar() {
               </Tooltip>
             ) : (
               <button
-                onClick={() => logoutMutation.mutate()}
+                onClick={() => setShowLogoutDialog(true)}
                 className="text-white/40 hover:text-white transition-colors"
                 title="Logout"
               >
@@ -212,6 +213,11 @@ export function Sidebar() {
             )}
           </div>
         </div>
+
+        <LogoutConfirmDialog
+          open={showLogoutDialog}
+          onOpenChange={setShowLogoutDialog}
+        />
 
         {/* Collapse toggle */}
         <button

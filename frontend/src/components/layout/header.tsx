@@ -6,7 +6,6 @@ import Link from "next/link";
 import { useSession } from "next-auth/react";
 import { Bell, Menu, Search, LogOut, User } from "lucide-react";
 import { getPageTitle } from "@/config/navigation";
-import { useLogout } from "@/hooks/api";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -25,6 +24,7 @@ import {
   SheetTitle,
 } from "@/components/ui/sheet";
 import { MobileSidebar } from "./mobile-sidebar";
+import { LogoutConfirmDialog } from "./logout-confirm-dialog";
 import { NotificationsDrawer } from "@/components/monitoring/notifications-drawer";
 import { MOCK_NOTIFICATIONS } from "@/lib/mock-monitoring-data";
 import type { Notification } from "@/types/monitoring";
@@ -48,7 +48,7 @@ export function Header() {
     );
   }, []);
 
-  const logoutMutation = useLogout();
+  const [showLogoutDialog, setShowLogoutDialog] = useState(false);
   const userName = session?.user?.fullName || session?.user?.name || "User";
   const userEmail = session?.user?.email || "";
   const userPicture = session?.user?.profilePictureUrl;
@@ -141,7 +141,7 @@ export function Header() {
           </DropdownMenuItem>
           <DropdownMenuSeparator />
           <DropdownMenuItem
-            onClick={() => logoutMutation.mutate()}
+            onClick={() => setShowLogoutDialog(true)}
             className="text-destructive focus:text-destructive"
           >
             <LogOut className="mr-2 h-4 w-4" />
@@ -149,6 +149,11 @@ export function Header() {
           </DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>
+
+      <LogoutConfirmDialog
+        open={showLogoutDialog}
+        onOpenChange={setShowLogoutDialog}
+      />
     </header>
   );
 }
