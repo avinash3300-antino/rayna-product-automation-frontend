@@ -67,6 +67,48 @@ export function useCreateDestination() {
   });
 }
 
+interface UpdateDestinationPayload {
+  name?: string;
+  country_name?: string;
+  country_flag?: string;
+  city_name?: string;
+  enabled_categories?: string[];
+}
+
+export function useUpdateDestination() {
+  const api = useApiClient();
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async ({
+      destinationId,
+      data,
+    }: {
+      destinationId: string;
+      data: UpdateDestinationPayload;
+    }) => {
+      return api.patch(`/api/v1/destinations/${destinationId}`, data);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.destinations.all });
+    },
+  });
+}
+
+export function useDeleteDestination() {
+  const api = useApiClient();
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (destinationId: string) => {
+      return api.delete(`/api/v1/destinations/${destinationId}`);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.destinations.all });
+    },
+  });
+}
+
 export function useUpdateDestinationStatus() {
   const api = useApiClient();
   const queryClient = useQueryClient();

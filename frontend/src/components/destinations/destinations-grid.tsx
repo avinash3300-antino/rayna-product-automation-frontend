@@ -5,17 +5,28 @@ import { Plus, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { DestinationCard } from "./destination-card";
 import { AddDestinationDialog } from "./add-destination-dialog";
+import { EditDestinationDialog } from "./edit-destination-dialog";
+import { DeleteDestinationDialog } from "./delete-destination-dialog";
 import { IntelligenceSummarySheet } from "./intelligence-summary-sheet";
 import { MOCK_INTELLIGENCE_SUMMARIES, COUNTRY_OPTIONS } from "@/lib/mock-destinations-data";
-import { useDestinations, useCreateDestination } from "@/hooks/api/use-destinations";
+import {
+  useDestinations,
+  useCreateDestination,
+  useUpdateDestination,
+  useDeleteDestination,
+} from "@/hooks/api/use-destinations";
 import type { AddDestinationFormData } from "@/types/destinations";
 import { toast } from "sonner";
 
 export function DestinationsGrid() {
   const { data, isLoading, error } = useDestinations({ perPage: 100 });
   const createDestination = useCreateDestination();
+  const updateDestination = useUpdateDestination();
+  const deleteDestination = useDeleteDestination();
 
   const [addDialogOpen, setAddDialogOpen] = useState(false);
+  const [editDialogOpen, setEditDialogOpen] = useState(false);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [intelligenceSheetOpen, setIntelligenceSheetOpen] = useState(false);
   const [selectedDestinationId, setSelectedDestinationId] = useState<
     string | null
@@ -60,8 +71,54 @@ export function DestinationsGrid() {
   }
 
   function handleEdit(id: string) {
-    // Placeholder for edit functionality
-    console.log("Edit destination:", id);
+    setSelectedDestinationId(id);
+    setEditDialogOpen(true);
+  }
+
+  function handleEditSubmit(
+    destinationId: string,
+    data: {
+      name: string;
+      country_name: string;
+      country_flag: string;
+      city_name: string;
+      enabled_categories: string[];
+    }
+  ) {
+    updateDestination.mutate(
+      { destinationId, data },
+      {
+        onSuccess: () => {
+          toast.success("Destination updated successfully.");
+          setEditDialogOpen(false);
+        },
+        onError: (err) => {
+          toast.error(
+            err instanceof Error ? err.message : "Failed to update destination"
+          );
+        },
+      }
+    );
+  }
+
+  function handleDelete(id: string) {
+    setSelectedDestinationId(id);
+    setDeleteDialogOpen(true);
+  }
+
+  function handleDeleteConfirm(destinationId: string) {
+    deleteDestination.mutate(destinationId, {
+      onSuccess: () => {
+        toast.success("Destination deleted successfully.");
+        setDeleteDialogOpen(false);
+        setSelectedDestinationId(null);
+      },
+      onError: (err) => {
+        toast.error(
+          err instanceof Error ? err.message : "Failed to delete destination"
+        );
+      },
+    });
   }
 
   const selectedDestination =
@@ -128,6 +185,7 @@ export function DestinationsGrid() {
               onRunIngestion={handleRunIngestion}
               onViewIntelligence={handleViewIntelligence}
               onEdit={handleEdit}
+              onDelete={handleDelete}
             />
           ))}
         </div>
@@ -138,6 +196,24 @@ export function DestinationsGrid() {
         open={addDialogOpen}
         onOpenChange={setAddDialogOpen}
         onSubmit={handleAddDestination}
+      />
+
+      {/* Edit Destination Dialog */}
+      <EditDestinationDialog
+        open={editDialogOpen}
+        onOpenChange={setEditDialogOpen}
+        destination={selectedDestination}
+        onSubmit={handleEditSubmit}
+        isPending={updateDestination.isPending}
+      />
+
+      {/* Delete Destination Dialog */}
+      <DeleteDestinationDialog
+        open={deleteDialogOpen}
+        onOpenChange={setDeleteDialogOpen}
+        destination={selectedDestination}
+        onConfirm={handleDeleteConfirm}
+        isPending={deleteDestination.isPending}
       />
 
       {/* Intelligence Summary Sheet */}
