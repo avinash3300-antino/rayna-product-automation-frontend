@@ -110,7 +110,7 @@ export function DestinationCard({
 
         {/* Last ingestion */}
         <div className="text-sm">
-          <span className="text-muted-foreground">Last ingestion: </span>
+          <span className="text-muted-foreground">Last fetched: </span>
           {destination.lastIngestionRun ? (
             <span className="inline-flex items-center gap-1.5">
               <span>{formatRelativeTime(destination.lastIngestionRun.date)}</span>
@@ -155,7 +155,7 @@ export function DestinationCard({
             onClick={() => onRunIngestion(destination.id)}
           >
             <Play className="mr-1 h-3 w-3" />
-            Run Ingestion
+            Fetch Data
           </Button>
           <Button
             variant="outline"

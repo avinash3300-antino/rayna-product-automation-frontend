@@ -2,7 +2,9 @@ import type {
   BackendUserResponse,
   BackendAuditLogResponse,
   BackendPaginatedResponse,
+  BackendDestinationListItem,
 } from "@/types/api-responses";
+import type { Destination, DestinationStatus, IngestionRunStatus, ProductCategory } from "@/types/destinations";
 import type { AppUser, UserRole, UserStatus } from "@/types/users";
 import type { ProfileActivityEntry, ProfileActionType } from "@/types/profile";
 import type { PaginatedResponse } from "@/types/index";
@@ -113,6 +115,56 @@ function humanizeEntity(entityType: string, entityId: string): string {
   }
 
   return `${label}: ${entityId}`;
+}
+
+// ---- Destination transformer ----
+
+const VALID_INGESTION_STATUSES = new Set(["completed", "running", "failed", "queued"]);
+
+export function transformDestinationResponse(
+  raw: BackendDestinationListItem
+): Destination {
+  const productCounts = {
+    hotels: raw.product_counts?.hotels ?? 0,
+    attractions: raw.product_counts?.attractions ?? 0,
+    transfers: raw.product_counts?.transfers ?? 0,
+    restaurants: raw.product_counts?.restaurants ?? 0,
+  } as Record<ProductCategory, number>;
+
+  let lastIngestionRun = null;
+  if (raw.last_ingestion_run) {
+    const status = VALID_INGESTION_STATUSES.has(raw.last_ingestion_run.status)
+      ? (raw.last_ingestion_run.status as IngestionRunStatus)
+      : ("queued" as IngestionRunStatus);
+    lastIngestionRun = {
+      date: raw.last_ingestion_run.date ?? new Date().toISOString(),
+      status,
+      recordsProcessed: raw.last_ingestion_run.records_processed,
+      durationMs: raw.last_ingestion_run.duration_ms,
+    };
+  }
+
+  return {
+    id: raw.id,
+    name: raw.name,
+    country: raw.country_name ?? raw.country_code ?? "",
+    countryFlag: raw.country_flag ?? "",
+    region: raw.region_name ?? "",
+    city: raw.city_name ?? "",
+    timezone: raw.timezone ?? "",
+    latitude: raw.latitude,
+    longitude: raw.longitude,
+    status: (raw.status === "active" || raw.status === "inactive"
+      ? raw.status
+      : "active") as DestinationStatus,
+    productCounts,
+    lastIngestionRun,
+    intelligenceFilter: {
+      lastRunDate: null,
+      keywordsFound: 0,
+      sourcesApproved: 0,
+    },
+  };
 }
 
 export function transformAuditLogToActivity(

@@ -53,6 +53,7 @@ export interface AddDestinationFormData {
   timezone: string;
   latitude: string;
   longitude: string;
+  enabledCategories: ProductCategory[];
 }
 
 // ---- Intelligence Summary: Keywords ----

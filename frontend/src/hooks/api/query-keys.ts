@@ -15,4 +15,10 @@ export const queryKeys = {
     activity: (params: Record<string, unknown>) =>
       ["profile", "activity", params] as const,
   },
+  destinations: {
+    all: ["destinations"] as const,
+    list: (params: Record<string, unknown>) =>
+      ["destinations", "list", params] as const,
+    detail: (id: string) => ["destinations", "detail", id] as const,
+  },
 };

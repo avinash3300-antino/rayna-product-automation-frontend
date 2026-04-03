@@ -117,16 +117,6 @@ export function ClassificationQueue() {
 
   return (
     <div className="space-y-6">
-      {/* Header */}
-      <div>
-        <h2 className="text-2xl font-bold tracking-tight">
-          Review Queue A — Classification
-        </h2>
-        <p className="text-muted-foreground">
-          Review and approve AI-classified product records
-        </p>
-      </div>
-
       {/* Stats */}
       <ClassificationStats stats={stats} />
 

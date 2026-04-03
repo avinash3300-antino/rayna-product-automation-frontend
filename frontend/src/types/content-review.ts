@@ -15,7 +15,8 @@ export type ContentTabKey =
   | "meta"
   | "faq"
   | "schema"
-  | "tags";
+  | "tags"
+  | "google_review";
 
 // ---- FAQ Item ----
 export interface FaqItem {
@@ -24,6 +25,13 @@ export interface FaqItem {
 }
 
 // ---- Content Fields (AI-generated) ----
+export interface GoogleReviewItem {
+  reviewer: string;
+  rating: number;
+  text: string;
+  date: string;
+}
+
 export interface ContentFields {
   shortDesc: string;
   longDesc: string;
@@ -32,6 +40,7 @@ export interface ContentFields {
   faq: FaqItem[];
   schemaMarkup: string;
   tags: string[];
+  googleReviews: GoogleReviewItem[];
 }
 
 // ---- Content Record ----
