@@ -13,6 +13,9 @@ import {
   Bell,
   Users,
   Settings,
+  Compass,
+  Bot,
+  Ticket,
   type LucideIcon,
 } from "lucide-react";
 
@@ -40,6 +43,8 @@ export const navigation: NavSection[] = [
     label: "PIPELINE",
     items: [
       { title: "Destinations", href: "/destinations", icon: Globe },
+      { title: "Source Discovery", href: "/discovery", icon: Compass },
+      { title: "Scraping Jobs", href: "/scraping", icon: Bot },
       { title: "Ingestion Monitor", href: "/ingestion", icon: Activity },
       {
         title: "Review Queue",
@@ -53,6 +58,7 @@ export const navigation: NavSection[] = [
     label: "CATALOG",
     items: [
       { title: "Product Browser", href: "/products", icon: LayoutGrid },
+      { title: "Activities", href: "/activities", icon: Ticket },
       {
         title: "Attribute Editor",
         href: "/attributes",

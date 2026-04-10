@@ -3,9 +3,17 @@ import type {
   BackendAuditLogResponse,
   BackendPaginatedResponse,
   BackendDestinationListItem,
+  BackendSourceDiscoveryRunResponse,
+  BackendScrapeSourceResponse,
+  BackendScrapeJobResponse,
+  BackendActivityCard,
+  BackendActivityResponse,
 } from "@/types/api-responses";
 import type { Destination, DestinationStatus, IngestionRunStatus, ProductCategory } from "@/types/destinations";
 import type { AppUser, UserRole, UserStatus } from "@/types/users";
+import type { DiscoveryRun, ScrapeSource } from "@/types/discovery";
+import type { ScrapeJob } from "@/types/scraping";
+import type { ActivityCardItem, Activity, ActivityStatus } from "@/types/activities";
 import type { ProfileActivityEntry, ProfileActionType } from "@/types/profile";
 import type { PaginatedResponse } from "@/types/index";
 
@@ -176,5 +184,183 @@ export function transformAuditLogToActivity(
     entity: humanizeEntity(raw.entity_type, raw.entity_id),
     timestamp: raw.created_at,
     actionType: mapActionToActionType(raw.action),
+  };
+}
+
+// ---- Discovery transformers ----
+
+export function transformDiscoveryRunResponse(
+  raw: BackendSourceDiscoveryRunResponse
+): DiscoveryRun {
+  return {
+    id: raw.id,
+    cityId: raw.city_id,
+    category: raw.category,
+    status: raw.status as DiscoveryRun["status"],
+    ahrefsResults: raw.ahrefs_results,
+    searchapiResults: raw.searchapi_results,
+    claudeSynthesis: raw.claude_synthesis,
+    sourcesFound: raw.sources_found,
+    sourcesApproved: raw.sources_approved,
+    errorMessage: raw.error_message,
+    startedAt: raw.started_at,
+    completedAt: raw.completed_at,
+    createdAt: raw.created_at,
+  };
+}
+
+export function transformScrapeSourceResponse(
+  raw: BackendScrapeSourceResponse
+): ScrapeSource {
+  return {
+    id: raw.id,
+    cityId: raw.city_id,
+    category: raw.category,
+    sourceName: raw.source_name,
+    sourceUrl: raw.source_url,
+    tier: raw.tier,
+    authorityScore: raw.authority_score,
+    approved: raw.approved,
+    approvedAt: raw.approved_at,
+    addedBy: raw.added_by,
+    isActive: raw.is_active,
+    lastScrapedAt: raw.last_scraped_at,
+    createdAt: raw.created_at,
+  };
+}
+
+// ---- Scraping transformer ----
+
+export function transformScrapeJobResponse(
+  raw: BackendScrapeJobResponse
+): ScrapeJob {
+  return {
+    id: raw.id,
+    discoveryRunId: raw.discovery_run_id,
+    cityId: raw.city_id,
+    category: raw.category,
+    status: raw.status as ScrapeJob["status"],
+    sourceId: raw.source_id,
+    sourceUrl: raw.source_url,
+    scrapeType: raw.scrape_type,
+    pagesScraped: raw.pages_scraped,
+    recordsFound: raw.records_found,
+    recordsSaved: raw.records_saved,
+    recordsSkippedDup: raw.records_skipped_dup,
+    recordsEnriched: raw.records_enriched,
+    errorsJson: raw.errors_json,
+    startedAt: raw.started_at,
+    completedAt: raw.completed_at,
+    createdAt: raw.created_at,
+  };
+}
+
+// ---- Activity transformers ----
+
+export function transformActivityCardResponse(
+  raw: BackendActivityCard
+): ActivityCardItem {
+  return {
+    id: raw.id,
+    name: raw.name,
+    slug: raw.slug,
+    category: raw.category,
+    city: raw.city,
+    priceFrom: raw.price_from,
+    currency: raw.currency,
+    rating: raw.rating,
+    reviewCount: raw.review_count,
+    coverImageUrl: raw.cover_image_url,
+    instantConfirmation: raw.instant_confirmation,
+    freeCancellation: raw.free_cancellation,
+    durationMinutes: raw.duration_minutes,
+    qualityScore: raw.quality_score,
+    status: raw.status as ActivityStatus,
+  };
+}
+
+export function transformActivityResponse(
+  raw: BackendActivityResponse
+): Activity {
+  return {
+    id: raw.id,
+    name: raw.name,
+    slug: raw.slug,
+    cityId: raw.city_id,
+    category: raw.category,
+    subCategory: raw.sub_category,
+    activityType: raw.activity_type,
+    tags: raw.tags,
+    status: raw.status as ActivityStatus,
+    descriptionShort: raw.description_short,
+    descriptionLong: raw.description_long,
+    highlights: raw.highlights,
+    included: raw.included,
+    excluded: raw.excluded,
+    whatToBring: raw.what_to_bring,
+    importantNotes: raw.important_notes,
+    priceAdult: raw.price_adult,
+    priceChild: raw.price_child,
+    priceInfant: raw.price_infant,
+    priceGroup: raw.price_group,
+    priceOriginal: raw.price_original,
+    currency: raw.currency,
+    priceType: raw.price_type,
+    discountPct: raw.discount_pct,
+    priceFrom: raw.price_from,
+    durationMinutes: raw.duration_minutes,
+    startTimes: raw.start_times,
+    operatingDays: raw.operating_days,
+    instantConfirmation: raw.instant_confirmation,
+    freeCancellation: raw.free_cancellation,
+    cancellationHours: raw.cancellation_hours,
+    cancellationPolicy: raw.cancellation_policy,
+    minParticipants: raw.min_participants,
+    maxParticipants: raw.max_participants,
+    advanceBookingDays: raw.advance_booking_days,
+    country: raw.country,
+    city: raw.city,
+    area: raw.area,
+    address: raw.address,
+    lat: raw.lat,
+    lng: raw.lng,
+    mapsLink: raw.maps_link,
+    meetingPointName: raw.meeting_point_name,
+    meetingPointDesc: raw.meeting_point_desc,
+    nearbyLandmark: raw.nearby_landmark,
+    pickupAvailable: raw.pickup_available,
+    pickupLocations: raw.pickup_locations,
+    hotelPickupIncluded: raw.hotel_pickup_included,
+    dropoffAvailable: raw.dropoff_available,
+    refundPolicyDetails: raw.refund_policy_details,
+    minAge: raw.min_age,
+    maxAge: raw.max_age,
+    fitnessLevel: raw.fitness_level,
+    difficulty: raw.difficulty,
+    pregnancyRestriction: raw.pregnancy_restriction,
+    wheelchairAccess: raw.wheelchair_access,
+    languages: raw.languages,
+    coverImageUrl: raw.cover_image_url,
+    galleryJson: raw.gallery_json,
+    videoUrl: raw.video_url,
+    rating: raw.rating,
+    reviewCount: raw.review_count,
+    rating5: raw.rating_5,
+    rating4: raw.rating_4,
+    rating3: raw.rating_3,
+    reviewSnippets: raw.review_snippets,
+    metaTitle: raw.meta_title,
+    metaDescription: raw.meta_description,
+    focusKeyword: raw.focus_keyword,
+    jsonLd: raw.json_ld,
+    canonicalUrl: raw.canonical_url,
+    sourceUrl: raw.source_url,
+    sourceType: raw.source_type,
+    operatorName: raw.operator_name,
+    verified: raw.verified,
+    dedupHash: raw.dedup_hash,
+    qualityScore: raw.quality_score,
+    createdAt: raw.created_at,
+    updatedAt: raw.updated_at,
   };
 }

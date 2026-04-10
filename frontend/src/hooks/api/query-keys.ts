@@ -21,4 +21,23 @@ export const queryKeys = {
       ["destinations", "list", params] as const,
     detail: (id: string) => ["destinations", "detail", id] as const,
   },
+  discovery: {
+    all: ["discovery"] as const,
+    runs: (params: Record<string, unknown>) =>
+      ["discovery", "runs", params] as const,
+    run: (id: string) => ["discovery", "run", id] as const,
+    sources: (runId: string) => ["discovery", "sources", runId] as const,
+  },
+  scraping: {
+    all: ["scraping"] as const,
+    jobs: (params: Record<string, unknown>) =>
+      ["scraping", "jobs", params] as const,
+    job: (id: string) => ["scraping", "job", id] as const,
+  },
+  activities: {
+    all: ["activities"] as const,
+    list: (params: Record<string, unknown>) =>
+      ["activities", "list", params] as const,
+    detail: (id: string) => ["activities", "detail", id] as const,
+  },
 };
