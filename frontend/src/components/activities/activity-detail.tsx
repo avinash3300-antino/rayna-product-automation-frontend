@@ -24,6 +24,7 @@ import { ActivityPricingTab } from "./activity-pricing-tab";
 import { ActivitySeoTab } from "./activity-seo-tab";
 import { ActivityMediaTab } from "./activity-media-tab";
 import { ActivitySourceTab } from "./activity-source-tab";
+import { ActivityReviewsTab } from "./activity-reviews-tab";
 import { DeleteActivityDialog } from "./delete-activity-dialog";
 import { UpdateStatusDialog } from "./update-status-dialog";
 import type { ActivityStatus } from "@/types/activities";
@@ -195,6 +196,7 @@ export function ActivityDetail({ activityId }: ActivityDetailProps) {
           <TabsTrigger value="pricing">Pricing</TabsTrigger>
           <TabsTrigger value="seo">SEO</TabsTrigger>
           <TabsTrigger value="media">Media</TabsTrigger>
+          <TabsTrigger value="reviews">Reviews</TabsTrigger>
           <TabsTrigger value="source">Source</TabsTrigger>
         </TabsList>
 
@@ -220,6 +222,10 @@ export function ActivityDetail({ activityId }: ActivityDetailProps) {
 
         <TabsContent value="media">
           <ActivityMediaTab activity={activity} />
+        </TabsContent>
+
+        <TabsContent value="reviews">
+          <ActivityReviewsTab activity={activity} />
         </TabsContent>
 
         <TabsContent value="source">

@@ -149,6 +149,32 @@ export interface BackendScrapeJobResponse {
   created_at: string;
 }
 
+// ---- Review responses ----
+
+export interface BackendReviewResponse {
+  id: string;
+  activity_id: string;
+  reviewer_name: string;
+  reviewer_avatar_url: string | null;
+  rating: number | null;
+  review_title: string | null;
+  review_text: string;
+  review_date: string | null;
+  source_platform: string;
+  source_url: string | null;
+  verified: boolean;
+  language: string;
+  created_at: string;
+}
+
+export interface BackendReviewListResponse {
+  activity_id: string;
+  total: number;
+  avg_rating: number | null;
+  platform_counts: Record<string, number>;
+  reviews: BackendReviewResponse[];
+}
+
 // ---- Activity responses ----
 
 export interface BackendActivityCard {

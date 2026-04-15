@@ -8,12 +8,14 @@ import type {
   BackendScrapeJobResponse,
   BackendActivityCard,
   BackendActivityResponse,
+  BackendReviewResponse,
+  BackendReviewListResponse,
 } from "@/types/api-responses";
 import type { Destination, DestinationStatus, IngestionRunStatus, ProductCategory } from "@/types/destinations";
 import type { AppUser, UserRole, UserStatus } from "@/types/users";
 import type { DiscoveryRun, ScrapeSource } from "@/types/discovery";
 import type { ScrapeJob } from "@/types/scraping";
-import type { ActivityCardItem, Activity, ActivityStatus } from "@/types/activities";
+import type { ActivityCardItem, Activity, ActivityStatus, ActivityReview, ActivityReviewList } from "@/types/activities";
 import type { ProfileActivityEntry, ProfileActionType } from "@/types/profile";
 import type { PaginatedResponse } from "@/types/index";
 
@@ -362,5 +364,35 @@ export function transformActivityResponse(
     qualityScore: raw.quality_score,
     createdAt: raw.created_at,
     updatedAt: raw.updated_at,
+  };
+}
+
+// ---- Review transformers ----
+
+export function transformReviewResponse(raw: BackendReviewResponse): ActivityReview {
+  return {
+    id: raw.id,
+    activityId: raw.activity_id,
+    reviewerName: raw.reviewer_name,
+    reviewerAvatarUrl: raw.reviewer_avatar_url,
+    rating: raw.rating,
+    reviewTitle: raw.review_title,
+    reviewText: raw.review_text,
+    reviewDate: raw.review_date,
+    sourcePlatform: raw.source_platform,
+    sourceUrl: raw.source_url,
+    verified: raw.verified,
+    language: raw.language,
+    createdAt: raw.created_at,
+  };
+}
+
+export function transformReviewListResponse(raw: BackendReviewListResponse): ActivityReviewList {
+  return {
+    activityId: raw.activity_id,
+    total: raw.total,
+    avgRating: raw.avg_rating,
+    platformCounts: raw.platform_counts,
+    reviews: raw.reviews.map(transformReviewResponse),
   };
 }

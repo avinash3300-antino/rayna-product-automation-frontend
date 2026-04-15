@@ -106,3 +106,27 @@ export interface Activity {
 }
 
 export type ActivityViewMode = "grid" | "table";
+
+export interface ActivityReview {
+  id: string;
+  activityId: string;
+  reviewerName: string;
+  reviewerAvatarUrl: string | null;
+  rating: number | null;
+  reviewTitle: string | null;
+  reviewText: string;
+  reviewDate: string | null;
+  sourcePlatform: string;
+  sourceUrl: string | null;
+  verified: boolean;
+  language: string;
+  createdAt: string;
+}
+
+export interface ActivityReviewList {
+  activityId: string;
+  total: number;
+  avgRating: number | null;
+  platformCounts: Record<string, number>;
+  reviews: ActivityReview[];
+}

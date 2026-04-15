@@ -39,5 +39,6 @@ export const queryKeys = {
     list: (params: Record<string, unknown>) =>
       ["activities", "list", params] as const,
     detail: (id: string) => ["activities", "detail", id] as const,
+    reviews: (id: string) => ["activities", "reviews", id] as const,
   },
 };
