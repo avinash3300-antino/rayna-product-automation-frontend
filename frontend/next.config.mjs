@@ -11,6 +11,22 @@ const nextConfig = {
         protocol: "https",
         hostname: "cdn.getyourguide.com",
       },
+      {
+        protocol: "https",
+        hostname: "cdn-imgix.headout.com",
+      },
+      {
+        protocol: "https",
+        hostname: "**.viator.com",
+      },
+      {
+        protocol: "https",
+        hostname: "**.egypttoursportal.com",
+      },
+      {
+        protocol: "https",
+        hostname: "**.tacdn.com",
+      },
     ],
   },
 };

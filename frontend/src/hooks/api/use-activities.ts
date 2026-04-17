@@ -29,6 +29,18 @@ interface ListActivitiesParams {
   perPage?: number;
 }
 
+export function useActivityCities() {
+  const api = useApiClient();
+
+  return useQuery<string[]>({
+    queryKey: queryKeys.activities.cities,
+    queryFn: async () => {
+      return api.get<string[]>("/api/v1/activities/cities");
+    },
+    staleTime: 5 * 60 * 1000,
+  });
+}
+
 export function useActivities(params: ListActivitiesParams = {}) {
   const api = useApiClient();
 

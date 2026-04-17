@@ -1,6 +1,6 @@
 "use client";
 
-import { SessionProvider, signIn, useSession } from "next-auth/react";
+import { SessionProvider, signOut, useSession } from "next-auth/react";
 import { useEffect } from "react";
 import { usePathname } from "next/navigation";
 
@@ -10,7 +10,7 @@ function SessionGuard({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     if (session?.error === "RefreshTokenError" && pathname !== "/login") {
-      signIn();
+      signOut({ callbackUrl: "/login" });
     }
   }, [session?.error, pathname]);
 

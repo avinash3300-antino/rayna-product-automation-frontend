@@ -53,7 +53,7 @@ export function ActivityBrowser() {
     search: debouncedSearch || undefined,
     category: filters.category !== "all" ? filters.category : undefined,
     status: filters.status !== "all" ? filters.status : undefined,
-    city: filters.city || undefined,
+    city: filters.city !== "all" ? filters.city : undefined,
     free_cancellation: filters.freeCancellation ? true : undefined,
     instant_confirmation: filters.instantConfirmation ? true : undefined,
     page,

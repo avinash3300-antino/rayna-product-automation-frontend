@@ -2,7 +2,6 @@
 
 import { X } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { Checkbox } from "@/components/ui/checkbox";
 import {
   Select,
@@ -12,6 +11,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import type { ActivityStatus } from "@/types/activities";
+import { useActivityCities } from "@/hooks/api/use-activities";
 
 export interface ActivityFiltersState {
   category: string;
@@ -48,7 +48,7 @@ const STATUSES: { value: string; label: string }[] = [
 const INITIAL_FILTERS: ActivityFiltersState = {
   category: "all",
   status: "all",
-  city: "",
+  city: "all",
   freeCancellation: false,
   instantConfirmation: false,
 };
@@ -57,10 +57,12 @@ export function ActivityFilters({
   filters,
   onFiltersChange,
 }: ActivityFiltersProps) {
+  const { data: cities = [] } = useActivityCities();
+
   const hasActiveFilters =
     filters.category !== "all" ||
     filters.status !== "all" ||
-    filters.city !== "" ||
+    filters.city !== "all" ||
     filters.freeCancellation ||
     filters.instantConfirmation;
 
@@ -104,13 +106,25 @@ export function ActivityFilters({
         </SelectContent>
       </Select>
 
-      {/* City Input */}
-      <Input
-        placeholder="Filter by city..."
+      {/* City Select */}
+      <Select
         value={filters.city}
-        onChange={(e) => onFiltersChange({ ...filters, city: e.target.value })}
-        className="w-[160px] h-9"
-      />
+        onValueChange={(value) =>
+          onFiltersChange({ ...filters, city: value })
+        }
+      >
+        <SelectTrigger className="w-[180px] h-9">
+          <SelectValue placeholder="City" />
+        </SelectTrigger>
+        <SelectContent>
+          <SelectItem value="all">All Cities</SelectItem>
+          {cities.map((city) => (
+            <SelectItem key={city} value={city}>
+              {city}
+            </SelectItem>
+          ))}
+        </SelectContent>
+      </Select>
 
       {/* Free Cancellation Toggle */}
       <label className="flex items-center gap-2 cursor-pointer text-sm text-muted-foreground hover:text-foreground transition-colors">
