@@ -4,7 +4,11 @@ import CredentialsProvider from "next-auth/providers/credentials";
 import type { BackendLoginResponse } from "@/types/api-responses";
 import type { UserRole, UserStatus } from "@/types/users";
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
+// Server-side calls use internal Docker network; browser calls use the public URL
+const API_BASE_URL =
+  process.env.INTERNAL_API_URL ||
+  process.env.NEXT_PUBLIC_API_URL ||
+  "http://localhost:8000";
 
 // Refresh 5 minutes before expiry
 const TOKEN_REFRESH_BUFFER_MS = 5 * 60 * 1000;
