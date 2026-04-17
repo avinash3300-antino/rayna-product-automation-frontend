@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { toast } from "sonner";
 import {
   Card,
   CardContent,
@@ -106,6 +107,7 @@ export function PackageRulesTab() {
       setJsonError("");
     } catch {
       setJsonError("Invalid JSON");
+      toast.error("Invalid JSON format.");
     }
   };
 

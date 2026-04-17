@@ -1,6 +1,6 @@
 "use client";
 
-import { Play, Brain, Pencil, Loader2 } from "lucide-react";
+import { Play, Brain, Pencil, Trash2, Loader2 } from "lucide-react";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -13,6 +13,7 @@ interface DestinationCardProps {
   onRunIngestion: (id: string) => void;
   onViewIntelligence: (id: string) => void;
   onEdit: (id: string) => void;
+  onDelete: (id: string) => void;
 }
 
 function formatRelativeTime(isoDate: string): string {
@@ -55,6 +56,7 @@ export function DestinationCard({
   onRunIngestion,
   onViewIntelligence,
   onEdit,
+  onDelete,
 }: DestinationCardProps) {
   const isActive = destination.status === "active";
 
@@ -110,7 +112,7 @@ export function DestinationCard({
 
         {/* Last ingestion */}
         <div className="text-sm">
-          <span className="text-muted-foreground">Last ingestion: </span>
+          <span className="text-muted-foreground">Last fetched: </span>
           {destination.lastIngestionRun ? (
             <span className="inline-flex items-center gap-1.5">
               <span>{formatRelativeTime(destination.lastIngestionRun.date)}</span>
@@ -155,7 +157,7 @@ export function DestinationCard({
             onClick={() => onRunIngestion(destination.id)}
           >
             <Play className="mr-1 h-3 w-3" />
-            Run Ingestion
+            Fetch Data
           </Button>
           <Button
             variant="outline"
@@ -166,14 +168,24 @@ export function DestinationCard({
             <Brain className="mr-1 h-3 w-3" />
             Intelligence
           </Button>
-          <Button
-            variant="ghost"
-            size="icon"
-            className="h-7 w-7 ml-auto"
-            onClick={() => onEdit(destination.id)}
-          >
-            <Pencil className="h-3 w-3" />
-          </Button>
+          <div className="flex items-center gap-1 ml-auto">
+            <Button
+              variant="ghost"
+              size="icon"
+              className="h-7 w-7"
+              onClick={() => onEdit(destination.id)}
+            >
+              <Pencil className="h-3 w-3" />
+            </Button>
+            <Button
+              variant="ghost"
+              size="icon"
+              className="h-7 w-7 text-destructive hover:text-destructive"
+              onClick={() => onDelete(destination.id)}
+            >
+              <Trash2 className="h-3 w-3" />
+            </Button>
+          </div>
         </div>
       </CardContent>
     </Card>

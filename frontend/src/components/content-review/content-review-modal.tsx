@@ -12,6 +12,7 @@ import {
   HelpCircle,
   Code,
   Tag,
+  Star,
 } from "lucide-react";
 import {
   Dialog,
@@ -64,6 +65,7 @@ const TABS: TabConfig[] = [
   { key: "faq", label: "FAQ", icon: <HelpCircle className="h-3.5 w-3.5" /> },
   { key: "schema", label: "Schema", icon: <Code className="h-3.5 w-3.5" /> },
   { key: "tags", label: "Tags", icon: <Tag className="h-3.5 w-3.5" /> },
+  { key: "google_review", label: "Google Review", icon: <Star className="h-3.5 w-3.5" /> },
 ];
 
 function cloneContentFields(fields: ContentFields): ContentFields {
@@ -75,7 +77,26 @@ function cloneContentFields(fields: ContentFields): ContentFields {
     faq: fields.faq.map((f) => ({ ...f })),
     schemaMarkup: fields.schemaMarkup,
     tags: [...fields.tags],
+    googleReviews: fields.googleReviews.map((r) => ({ ...r })),
   };
+}
+
+function renderStars(rating: number) {
+  return (
+    <div className="flex items-center gap-0.5">
+      {Array.from({ length: 5 }, (_, i) => (
+        <Star
+          key={i}
+          className={cn(
+            "h-3.5 w-3.5",
+            i < rating
+              ? "fill-amber-400 text-amber-400"
+              : "fill-muted text-muted"
+          )}
+        />
+      ))}
+    </div>
+  );
 }
 
 export function ContentReviewModal({
@@ -315,6 +336,47 @@ export function ContentReviewModal({
                 rows={2}
                 disabled={!isReviewable}
               />
+            </div>
+          )}
+
+          {/* Google Reviews */}
+          {activeTab === "google_review" && (
+            <div className="space-y-4">
+              <div className="flex items-center justify-between">
+                <label className="text-sm font-medium text-foreground">
+                  Google Reviews
+                </label>
+                <Badge variant="secondary" className="text-xs">
+                  {editedFields.googleReviews.length} reviews
+                </Badge>
+              </div>
+              {editedFields.googleReviews.length === 0 ? (
+                <div className="rounded-md border border-dashed p-8 text-center text-sm text-muted-foreground">
+                  No Google reviews available for this product
+                </div>
+              ) : (
+                editedFields.googleReviews.map((review, index) => (
+                  <div
+                    key={index}
+                    className="rounded-md border p-4 space-y-2"
+                  >
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <span className="text-sm font-medium">
+                          {review.reviewer}
+                        </span>
+                        {renderStars(review.rating)}
+                      </div>
+                      <span className="text-xs text-muted-foreground">
+                        {new Date(review.date).toLocaleDateString()}
+                      </span>
+                    </div>
+                    <p className="text-sm text-muted-foreground leading-relaxed">
+                      {review.text}
+                    </p>
+                  </div>
+                ))
+              )}
             </div>
           )}
         </ScrollArea>

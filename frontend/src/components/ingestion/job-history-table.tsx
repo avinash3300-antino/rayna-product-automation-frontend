@@ -61,7 +61,7 @@ export function JobHistoryTable({
   return (
     <Card>
       <CardHeader className="pb-3">
-        <CardTitle className="text-base">Job History</CardTitle>
+        <CardTitle className="text-base">Ingestion Jobs</CardTitle>
       </CardHeader>
       <CardContent>
         <TooltipProvider delayDuration={100}>

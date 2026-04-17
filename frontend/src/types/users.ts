@@ -15,6 +15,11 @@ export interface AppUser {
   fullName: string;
   email: string;
   avatarUrl: string | null;
+  profilePictureUrl: string | null;
+  jobTitle: string | null;
+  department: string | null;
+  phone: string | null;
+  timezone: string | null;
   roles: UserRole[];
   status: UserStatus;
   suspendedReason: string | null;

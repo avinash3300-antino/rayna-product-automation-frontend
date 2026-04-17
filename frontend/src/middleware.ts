@@ -24,5 +24,8 @@ export const config = {
     "/users/:path*",
     "/settings/:path*",
     "/profile/:path*",
+    "/discovery/:path*",
+    "/scraping/:path*",
+    "/activities/:path*",
   ],
 };

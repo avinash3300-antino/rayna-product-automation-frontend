@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState } from "react";
 import {
   CheckCircle,
   XCircle,
@@ -12,6 +12,7 @@ import {
   Play,
   Search,
   LogIn,
+  Loader2,
 } from "lucide-react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -26,9 +27,11 @@ import {
 } from "@/components/ui/select";
 import { cn } from "@/lib/utils";
 import { formatRelativeTime } from "@/lib/format";
-import type { ProfileActivityEntry, ProfileActionType } from "@/types/profile";
+import type { ProfileActionType } from "@/types/profile";
 import { PROFILE_ACTION_TYPE_CONFIG } from "@/types/profile";
-import { ACTIVITY_PAGE_SIZE } from "@/lib/mock-profile-data";
+import { useMyActivity } from "@/hooks/api";
+
+const ITEMS_PER_PAGE = 10;
 
 const ACTION_ICONS: Record<ProfileActionType, typeof CheckCircle> = {
   approved: CheckCircle,
@@ -43,38 +46,22 @@ const ACTION_ICONS: Record<ProfileActionType, typeof CheckCircle> = {
   login: LogIn,
 };
 
-interface ActivityTabProps {
-  activities: ProfileActivityEntry[];
-}
-
-export function ActivityTab({ activities }: ActivityTabProps) {
+export function ActivityTab() {
   const [filterType, setFilterType] = useState<ProfileActionType | "all">("all");
   const [dateFrom, setDateFrom] = useState("");
   const [dateTo, setDateTo] = useState("");
-  const [visibleCount, setVisibleCount] = useState(ACTIVITY_PAGE_SIZE);
+  const [page, setPage] = useState(1);
 
-  const filtered = useMemo(() => {
-    let result = activities;
+  const { data, isLoading } = useMyActivity({
+    actionType: filterType === "all" ? undefined : filterType,
+    page,
+    perPage: ITEMS_PER_PAGE,
+    dateFrom: dateFrom || undefined,
+    dateTo: dateTo || undefined,
+  });
 
-    if (filterType !== "all") {
-      result = result.filter((a) => a.actionType === filterType);
-    }
-
-    if (dateFrom) {
-      const from = new Date(dateFrom).getTime();
-      result = result.filter((a) => new Date(a.timestamp).getTime() >= from);
-    }
-
-    if (dateTo) {
-      const to = new Date(dateTo).getTime() + 24 * 60 * 60 * 1000; // end of day
-      result = result.filter((a) => new Date(a.timestamp).getTime() <= to);
-    }
-
-    return result;
-  }, [activities, filterType, dateFrom, dateTo]);
-
-  const visible = filtered.slice(0, visibleCount);
-  const remaining = filtered.length - visibleCount;
+  const activities = data?.data ?? [];
+  const totalPages = data?.totalPages ?? 1;
 
   function formatExactDate(iso: string): string {
     return new Date(iso).toLocaleString("en-US", {
@@ -107,7 +94,7 @@ export function ActivityTab({ activities }: ActivityTabProps) {
             value={filterType}
             onValueChange={(v) => {
               setFilterType(v as ProfileActionType | "all");
-              setVisibleCount(ACTIVITY_PAGE_SIZE);
+              setPage(1);
             }}
           >
             <SelectTrigger className="w-44">
@@ -131,7 +118,7 @@ export function ActivityTab({ activities }: ActivityTabProps) {
               value={dateFrom}
               onChange={(e) => {
                 setDateFrom(e.target.value);
-                setVisibleCount(ACTIVITY_PAGE_SIZE);
+                setPage(1);
               }}
             />
             <span>To</span>
@@ -141,32 +128,34 @@ export function ActivityTab({ activities }: ActivityTabProps) {
               value={dateTo}
               onChange={(e) => {
                 setDateTo(e.target.value);
-                setVisibleCount(ACTIVITY_PAGE_SIZE);
+                setPage(1);
               }}
             />
           </div>
         </div>
 
-        {/* Timeline */}
-        {visible.length === 0 ? (
+        {/* Loading */}
+        {isLoading ? (
+          <div className="flex items-center justify-center py-12">
+            <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
+          </div>
+        ) : activities.length === 0 ? (
           <div className="text-center py-12 text-sm text-muted-foreground">
             No activity found for the selected filters.
           </div>
         ) : (
           <div className="relative">
-            {visible.map((entry, idx) => {
+            {activities.map((entry, idx) => {
               const config = PROFILE_ACTION_TYPE_CONFIG[entry.actionType];
               const Icon = ACTION_ICONS[entry.actionType];
-              const isLast = idx === visible.length - 1;
+              const isLast = idx === activities.length - 1;
 
               return (
                 <div key={entry.id} className="relative pl-10 pb-8 last:pb-0">
-                  {/* Vertical line */}
                   {!isLast && (
                     <div className="absolute left-[15px] top-7 bottom-0 w-px bg-border" />
                   )}
 
-                  {/* Icon dot */}
                   <div
                     className={cn(
                       "absolute left-1 top-1 flex h-6 w-6 items-center justify-center rounded-full text-white",
@@ -176,7 +165,6 @@ export function ActivityTab({ activities }: ActivityTabProps) {
                     <Icon className="h-3 w-3" />
                   </div>
 
-                  {/* Content */}
                   <div className="space-y-1">
                     <div className="flex items-center gap-2">
                       <Badge variant="outline" className="text-[10px]">
@@ -200,16 +188,30 @@ export function ActivityTab({ activities }: ActivityTabProps) {
           </div>
         )}
 
-        {/* Load More */}
-        {remaining > 0 && (
-          <div className="text-center pt-6">
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => setVisibleCount((c) => c + ACTIVITY_PAGE_SIZE)}
-            >
-              Load more ({remaining} remaining)
-            </Button>
+        {/* Pagination */}
+        {totalPages > 1 && (
+          <div className="flex items-center justify-between pt-6">
+            <p className="text-xs text-muted-foreground">
+              Page {page} of {totalPages}
+            </p>
+            <div className="flex gap-2">
+              <Button
+                variant="outline"
+                size="sm"
+                disabled={page <= 1}
+                onClick={() => setPage((p) => p - 1)}
+              >
+                Previous
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                disabled={page >= totalPages}
+                onClick={() => setPage((p) => p + 1)}
+              >
+                Next
+              </Button>
+            </div>
           </div>
         )}
       </CardContent>

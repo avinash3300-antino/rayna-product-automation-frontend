@@ -3,12 +3,12 @@
 import { useState, useCallback } from "react";
 import { usePathname } from "next/navigation";
 import Link from "next/link";
-import { useSession, signOut } from "next-auth/react";
+import { useSession } from "next-auth/react";
 import { Bell, Menu, Search, LogOut, User } from "lucide-react";
 import { getPageTitle } from "@/config/navigation";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -24,6 +24,7 @@ import {
   SheetTitle,
 } from "@/components/ui/sheet";
 import { MobileSidebar } from "./mobile-sidebar";
+import { LogoutConfirmDialog } from "./logout-confirm-dialog";
 import { NotificationsDrawer } from "@/components/monitoring/notifications-drawer";
 import { MOCK_NOTIFICATIONS } from "@/lib/mock-monitoring-data";
 import type { Notification } from "@/types/monitoring";
@@ -47,8 +48,10 @@ export function Header() {
     );
   }, []);
 
-  const userName = session?.user?.name || "User";
+  const [showLogoutDialog, setShowLogoutDialog] = useState(false);
+  const userName = session?.user?.fullName || session?.user?.name || "User";
   const userEmail = session?.user?.email || "";
+  const userPicture = session?.user?.profilePictureUrl;
   const userInitials = userName
     .split(" ")
     .map((n) => n[0])
@@ -117,6 +120,7 @@ export function Header() {
         <DropdownMenuTrigger asChild>
           <Button variant="ghost" size="icon" className="rounded-full">
             <Avatar className="h-8 w-8">
+              {userPicture && <AvatarImage src={userPicture} alt={userName} />}
               <AvatarFallback className="bg-navy text-white text-xs">
                 {userInitials}
               </AvatarFallback>
@@ -137,7 +141,7 @@ export function Header() {
           </DropdownMenuItem>
           <DropdownMenuSeparator />
           <DropdownMenuItem
-            onClick={() => signOut({ callbackUrl: "/login" })}
+            onClick={() => setShowLogoutDialog(true)}
             className="text-destructive focus:text-destructive"
           >
             <LogOut className="mr-2 h-4 w-4" />
@@ -145,6 +149,11 @@ export function Header() {
           </DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>
+
+      <LogoutConfirmDialog
+        open={showLogoutDialog}
+        onOpenChange={setShowLogoutDialog}
+      />
     </header>
   );
 }

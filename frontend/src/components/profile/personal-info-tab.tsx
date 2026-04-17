@@ -25,14 +25,17 @@ import { TIMEZONE_OPTIONS, LANGUAGE_OPTIONS } from "@/lib/mock-settings-data";
 interface PersonalInfoTabProps {
   initialInfo: PersonalInfo;
   onDirty: () => void;
+  onInfoChange?: (info: PersonalInfo) => void;
 }
 
-export function PersonalInfoTab({ initialInfo, onDirty }: PersonalInfoTabProps) {
+export function PersonalInfoTab({ initialInfo, onDirty, onInfoChange }: PersonalInfoTabProps) {
   const [info, setInfo] = useState<PersonalInfo>(initialInfo);
 
   function update(patch: Partial<PersonalInfo>) {
-    setInfo((prev) => ({ ...prev, ...patch }));
+    const updated = { ...info, ...patch };
+    setInfo(updated);
     onDirty();
+    onInfoChange?.(updated);
   }
 
   return (

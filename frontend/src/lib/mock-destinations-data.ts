@@ -269,3 +269,18 @@ export const COUNTRY_OPTIONS = [
   { value: "Singapore", label: "Singapore", flag: "\u{1F1F8}\u{1F1EC}" },
   { value: "Sri Lanka", label: "Sri Lanka", flag: "\u{1F1F1}\u{1F1F0}" },
 ];
+
+export const COUNTRY_CITIES: Record<string, string[]> = {
+  "United Arab Emirates": ["Dubai", "Abu Dhabi", "Sharjah", "Ajman", "Ras Al Khaimah", "Fujairah", "Al Ain"],
+  "Oman": ["Muscat", "Salalah", "Sohar", "Nizwa", "Sur"],
+  "Georgia": ["Tbilisi", "Batumi", "Kutaisi", "Rustavi", "Gori"],
+  "Maldives": ["Male", "Addu City", "Fuvahmulah", "Kulhudhuffushi", "Thinadhoo"],
+  "Indonesia": ["Jakarta", "Bali", "Surabaya", "Bandung", "Yogyakarta", "Medan", "Lombok"],
+  "Thailand": ["Bangkok", "Phuket", "Chiang Mai", "Pattaya", "Krabi", "Koh Samui"],
+  "Turkey": ["Istanbul", "Ankara", "Antalya", "Izmir", "Cappadocia", "Bodrum"],
+  "India": ["Mumbai", "Delhi", "Bangalore", "Goa", "Jaipur", "Chennai", "Kolkata", "Hyderabad", "Agra", "Udaipur"],
+  "Egypt": ["Cairo", "Alexandria", "Luxor", "Aswan", "Hurghada", "Sharm El Sheikh"],
+  "Saudi Arabia": ["Riyadh", "Jeddah", "Mecca", "Medina", "Dammam", "Al Khobar"],
+  "Singapore": ["Singapore"],
+  "Sri Lanka": ["Colombo", "Kandy", "Galle", "Ella", "Negombo", "Sigiriya"],
+};

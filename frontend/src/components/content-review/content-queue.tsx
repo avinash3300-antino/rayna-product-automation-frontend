@@ -153,16 +153,6 @@ export function ContentQueue() {
 
   return (
     <div className="space-y-6">
-      {/* Header */}
-      <div>
-        <h2 className="text-2xl font-bold tracking-tight">
-          Review Queue B — Content
-        </h2>
-        <p className="text-muted-foreground">
-          Review and approve AI-generated product content
-        </p>
-      </div>
-
       {/* Stats */}
       <ContentStats stats={stats} />
 

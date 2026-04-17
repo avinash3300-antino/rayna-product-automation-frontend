@@ -2,7 +2,8 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useSession, signOut } from "next-auth/react";
+import { useSession } from "next-auth/react";
+import { useState } from "react";
 import {
   ChevronLeft,
   ChevronRight,
@@ -13,7 +14,7 @@ import { navigation, type NavItem } from "@/config/navigation";
 import { useSidebarStore } from "@/store/sidebar-store";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Badge } from "@/components/ui/badge";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Separator } from "@/components/ui/separator";
 import {
   Tooltip,
@@ -21,6 +22,7 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+import { LogoutConfirmDialog } from "./logout-confirm-dialog";
 
 function NavItemLink({
   item,
@@ -86,8 +88,10 @@ export function Sidebar() {
   const { data: session } = useSession();
   const { collapsed, toggle } = useSidebarStore();
 
-  const userRole = (session?.user as { role?: string })?.role || "user";
-  const userName = session?.user?.name || "User";
+  const [showLogoutDialog, setShowLogoutDialog] = useState(false);
+  const isAdmin = session?.user?.roles?.includes("admin") ?? false;
+  const userName = session?.user?.fullName || session?.user?.name || "User";
+  const userPicture = session?.user?.profilePictureUrl;
   const userInitials = userName
     .split(" ")
     .map((n) => n[0])
@@ -125,7 +129,7 @@ export function Sidebar() {
           <nav className="space-y-6">
             {navigation.map((section) => {
               const visibleItems = section.items.filter(
-                (item) => !item.adminOnly || userRole === "admin"
+                (item) => !item.adminOnly || isAdmin
               );
 
               if (visibleItems.length === 0) return null;
@@ -168,6 +172,7 @@ export function Sidebar() {
             )}
           >
             <Avatar className="h-8 w-8 shrink-0">
+              {userPicture && <AvatarImage src={userPicture} alt={userName} />}
               <AvatarFallback className="bg-gold/20 text-gold text-xs">
                 {userInitials}
               </AvatarFallback>
@@ -181,7 +186,7 @@ export function Sidebar() {
                   variant="outline"
                   className="mt-0.5 h-4 border-gold/30 text-gold text-[9px] px-1"
                 >
-                  {userRole}
+                  {session?.user?.roles?.[0] ?? "user"}
                 </Badge>
               </div>
             )}
@@ -189,7 +194,7 @@ export function Sidebar() {
               <Tooltip delayDuration={0}>
                 <TooltipTrigger asChild>
                   <button
-                    onClick={() => signOut({ callbackUrl: "/login" })}
+                    onClick={() => setShowLogoutDialog(true)}
                     className="text-white/40 hover:text-white transition-colors"
                   >
                     <LogOut className="h-4 w-4" />
@@ -199,7 +204,7 @@ export function Sidebar() {
               </Tooltip>
             ) : (
               <button
-                onClick={() => signOut({ callbackUrl: "/login" })}
+                onClick={() => setShowLogoutDialog(true)}
                 className="text-white/40 hover:text-white transition-colors"
                 title="Logout"
               >
@@ -208,6 +213,11 @@ export function Sidebar() {
             )}
           </div>
         </div>
+
+        <LogoutConfirmDialog
+          open={showLogoutDialog}
+          onOpenChange={setShowLogoutDialog}
+        />
 
         {/* Collapse toggle */}
         <button

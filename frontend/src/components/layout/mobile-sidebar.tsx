@@ -2,21 +2,25 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useSession, signOut } from "next-auth/react";
+import { useSession } from "next-auth/react";
+import { useState } from "react";
 import { LogOut } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { navigation } from "@/config/navigation";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Badge } from "@/components/ui/badge";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { SheetClose } from "@/components/ui/sheet";
+import { LogoutConfirmDialog } from "./logout-confirm-dialog";
 
 export function MobileSidebar() {
   const pathname = usePathname();
   const { data: session } = useSession();
 
-  const userRole = (session?.user as { role?: string })?.role || "user";
-  const userName = session?.user?.name || "User";
+  const [showLogoutDialog, setShowLogoutDialog] = useState(false);
+  const isAdmin = session?.user?.roles?.includes("admin") ?? false;
+  const userName = session?.user?.fullName || session?.user?.name || "User";
+  const userPicture = session?.user?.profilePictureUrl;
   const userInitials = userName
     .split(" ")
     .map((n) => n[0])
@@ -44,7 +48,7 @@ export function MobileSidebar() {
         <nav className="space-y-6">
           {navigation.map((section) => {
             const visibleItems = section.items.filter(
-              (item) => !item.adminOnly || userRole === "admin"
+              (item) => !item.adminOnly || isAdmin
             );
 
             if (visibleItems.length === 0) return null;
@@ -95,6 +99,7 @@ export function MobileSidebar() {
       <div className="border-t border-white/10 p-3">
         <div className="flex items-center gap-3">
           <Avatar className="h-8 w-8 shrink-0">
+            {userPicture && <AvatarImage src={userPicture} alt={userName} />}
             <AvatarFallback className="bg-gold/20 text-gold text-xs">
               {userInitials}
             </AvatarFallback>
@@ -107,17 +112,22 @@ export function MobileSidebar() {
               variant="outline"
               className="mt-0.5 h-4 border-gold/30 text-gold text-[9px] px-1"
             >
-              {userRole}
+              {session?.user?.roles?.[0] ?? "user"}
             </Badge>
           </div>
           <button
-            onClick={() => signOut({ callbackUrl: "/login" })}
+            onClick={() => setShowLogoutDialog(true)}
             className="text-white/40 hover:text-white transition-colors"
           >
             <LogOut className="h-4 w-4" />
           </button>
         </div>
       </div>
+
+      <LogoutConfirmDialog
+        open={showLogoutDialog}
+        onOpenChange={setShowLogoutDialog}
+      />
     </div>
   );
 }
