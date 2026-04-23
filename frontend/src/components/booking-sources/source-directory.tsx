@@ -103,7 +103,7 @@ interface SourceFormData {
 const INITIAL_FORM: SourceFormData = {
   name: "",
   code: "",
-  category: "hotels",
+  category: "activities",
   mode: "api",
   endpointUrl: "",
   contactEmail: "",

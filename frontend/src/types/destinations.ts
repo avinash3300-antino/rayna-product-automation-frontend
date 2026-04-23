@@ -2,7 +2,7 @@
 export type DestinationStatus = "active" | "inactive";
 
 // ---- Product Categories ----
-export type ProductCategory = "activities" | "cruises";
+export type ProductCategory = "activities" | "cruises" | "hotels";
 
 export type ProductCounts = Record<ProductCategory, number>;
 

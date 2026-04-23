@@ -136,16 +136,14 @@ export const MAPPING_STATUS_CONFIG: Record<
   },
 };
 
-export const CATEGORY_ICON_MAP: Record<ProductCategory, string> = {
+export const CATEGORY_ICON_MAP: Partial<Record<string, string>> = {
+  activities: "🎯",
+  cruises: "🚢",
   hotels: "🏨",
-  attractions: "🎡",
-  transfers: "🚐",
-  restaurants: "🍽️",
 };
 
-export const CATEGORY_LABELS: Record<ProductCategory, string> = {
+export const CATEGORY_LABELS: Partial<Record<string, string>> = {
+  activities: "Activities",
+  cruises: "Cruises",
   hotels: "Hotels",
-  attractions: "Attractions",
-  transfers: "Transfers",
-  restaurants: "Restaurants",
 };
