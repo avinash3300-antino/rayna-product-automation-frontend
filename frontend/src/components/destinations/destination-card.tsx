@@ -37,7 +37,7 @@ function getDaysAgo(isoDate: string | null): string {
   return `Last run: ${days} days ago`;
 }
 
-const ingestionStatusStyles: Record<IngestionRunStatus, string> = {
+const ingestionStatusStyles: Record<string, string> = {
   completed: "bg-emerald-500/10 text-emerald-600 border-emerald-500/20",
   running: "bg-blue-500/10 text-blue-600 border-blue-500/20",
   failed: "bg-red-500/10 text-red-600 border-red-500/20",
@@ -135,6 +135,7 @@ export function DestinationCard({
         </div>
 
         {/* Intelligence filter */}
+        {destination.intelligenceFilter && (
         <div className="text-sm text-muted-foreground">
           <span>Intelligence: </span>
           <span>{getDaysAgo(destination.intelligenceFilter.lastRunDate)}</span>
@@ -145,6 +146,7 @@ export function DestinationCard({
             </span>
           )}
         </div>
+        )}
 
         <Separator />
 

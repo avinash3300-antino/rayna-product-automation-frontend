@@ -33,7 +33,7 @@ interface ClassificationTableProps {
   onReviewClick: (recordId: string) => void;
 }
 
-const categoryStyles: Record<ProductCategory, string> = {
+const categoryStyles: Record<string, string> = {
   hotels: "border-chart-2/30 text-chart-2",
   attractions: "border-chart-1/30 text-chart-1",
   transfers: "border-blue-500/30 text-blue-600",

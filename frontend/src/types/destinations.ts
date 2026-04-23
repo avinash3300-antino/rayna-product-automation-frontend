@@ -2,9 +2,19 @@
 export type DestinationStatus = "active" | "inactive";
 
 // ---- Product Categories ----
-export type ProductCategory = "activities" | "cruises" | "hotels";
+export type ProductCategory = string;
 
-export type ProductCounts = Record<ProductCategory, number>;
+export type ProductCounts = Record<string, number>;
+
+// ---- Ingestion Run ----
+export type IngestionRunStatus = "completed" | "running" | "failed" | "queued";
+
+export interface LastIngestionRun {
+  date: string;
+  status: IngestionRunStatus;
+  recordsProcessed: number;
+  durationMs: number;
+}
 
 // ---- Scrape Run ----
 export type ScrapeRunStatus = "completed" | "running" | "failed" | "queued" | "pending";
@@ -14,6 +24,13 @@ export interface LastScrapeRun {
   status: ScrapeRunStatus;
   recordsFound: number;
   durationMs: number;
+}
+
+// ---- Intelligence Filter ----
+export interface IntelligenceFilterInfo {
+  lastRunDate: string | null;
+  keywordsFound: number;
+  sourcesApproved: number;
 }
 
 // ---- Core Destination ----
@@ -29,7 +46,10 @@ export interface Destination {
   longitude: number | null;
   status: DestinationStatus;
   productCounts: ProductCounts;
-  lastScrapeRun: LastScrapeRun | null;
+  lastIngestionRun: LastIngestionRun | null;
+  lastScrapeRun?: LastScrapeRun | null;
+  intelligenceFilter: IntelligenceFilterInfo;
+  enabledCategories?: ProductCategory[];
 }
 
 // ---- Add Destination Form ----
@@ -42,4 +62,49 @@ export interface AddDestinationFormData {
   latitude: string;
   longitude: string;
   enabledCategories: ProductCategory[];
+}
+
+// ---- Intelligence Summary: Keywords ----
+export type KeywordIntent =
+  | "informational"
+  | "transactional"
+  | "navigational"
+  | "commercial";
+
+export interface TopKeyword {
+  id: string;
+  keyword: string;
+  category: ProductCategory;
+  volume: number;
+  difficulty: number;
+  intent: KeywordIntent;
+}
+
+// ---- Intelligence Summary: Sources ----
+export type SourceType =
+  | "api"
+  | "website"
+  | "aggregator"
+  | "government"
+  | "review_platform";
+
+export type TosStatus = "compliant" | "pending_review" | "restricted";
+export type IngestionMethod = "api" | "scrape" | "feed" | "manual";
+
+export interface ApprovedSource {
+  id: string;
+  name: string;
+  type: SourceType;
+  categories: ProductCategory[];
+  relevanceScore: number;
+  tosStatus: TosStatus;
+  ingestionMethod: IngestionMethod;
+  priorityRank: number;
+}
+
+// ---- Intelligence Summary ----
+export interface IntelligenceSummary {
+  destinationId: string;
+  topKeywords: TopKeyword[];
+  approvedSources: ApprovedSource[];
 }

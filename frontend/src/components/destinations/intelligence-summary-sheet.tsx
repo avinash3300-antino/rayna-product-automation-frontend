@@ -49,7 +49,7 @@ const tosStyles: Record<TosStatus, string> = {
   restricted: "bg-red-500/10 text-red-600",
 };
 
-const categoryColors: Record<ProductCategory, string> = {
+const categoryColors: Record<string, string> = {
   hotels: "border-chart-1/30 text-chart-1",
   attractions: "border-chart-2/30 text-chart-2",
   transfers: "border-chart-3/30 text-chart-3",

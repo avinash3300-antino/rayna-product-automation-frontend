@@ -164,7 +164,14 @@ export function transformDestinationResponse(
       ? raw.status
       : "active") as DestinationStatus,
     productCounts,
+    lastIngestionRun: null,
     lastScrapeRun,
+    intelligenceFilter: {
+      lastRunDate: null,
+      keywordsFound: 0,
+      sourcesApproved: 0,
+    },
+    enabledCategories: raw.enabled_categories ?? [],
   };
 }
 
