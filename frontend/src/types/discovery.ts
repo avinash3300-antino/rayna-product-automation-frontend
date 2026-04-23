@@ -4,6 +4,7 @@ export interface DiscoveryRun {
   id: string;
   cityId: string;
   category: string;
+  productType: string;
   status: DiscoveryRunStatus;
   ahrefsResults: Record<string, unknown> | null;
   searchapiResults: Record<string, unknown> | null;
@@ -20,6 +21,7 @@ export interface ScrapeSource {
   id: string;
   cityId: string;
   category: string;
+  productType: string;
   sourceName: string;
   sourceUrl: string;
   tier: number;

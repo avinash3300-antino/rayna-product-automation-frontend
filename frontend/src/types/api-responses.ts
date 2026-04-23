@@ -57,18 +57,16 @@ export interface BackendPaginatedResponse<T> {
 
 // ---- Destination responses ----
 
-export interface BackendLastIngestionRun {
+export interface BackendLastScrapeRun {
   date: string | null;
   status: string;
-  records_processed: number;
+  records_found: number;
   duration_ms: number;
 }
 
 export interface BackendProductCountSummary {
-  hotels: number;
-  attractions: number;
-  transfers: number;
-  restaurants: number;
+  activities: number;
+  cruises: number;
   total: number;
 }
 
@@ -90,7 +88,7 @@ export interface BackendDestinationListItem {
   updated_at: string;
   location_count: number;
   product_counts: BackendProductCountSummary;
-  last_ingestion_run: BackendLastIngestionRun | null;
+  last_scrape_run: BackendLastScrapeRun | null;
 }
 
 // ---- Discovery responses ----
@@ -99,6 +97,7 @@ export interface BackendSourceDiscoveryRunResponse {
   id: string;
   city_id: string;
   category: string;
+  product_type: string;
   status: string;
   ahrefs_results: Record<string, unknown> | null;
   searchapi_results: Record<string, unknown> | null;
@@ -115,6 +114,7 @@ export interface BackendScrapeSourceResponse {
   id: string;
   city_id: string;
   category: string;
+  product_type: string;
   source_name: string;
   source_url: string;
   tier: number;
@@ -134,6 +134,7 @@ export interface BackendScrapeJobResponse {
   discovery_run_id: string | null;
   city_id: string;
   category: string;
+  product_type: string;
   status: string;
   source_id: string | null;
   source_url: string;
@@ -153,7 +154,8 @@ export interface BackendScrapeJobResponse {
 
 export interface BackendReviewResponse {
   id: string;
-  activity_id: string;
+  product_type: string;
+  product_id: string;
   reviewer_name: string;
   reviewer_avatar_url: string | null;
   rating: number | null;
@@ -168,7 +170,8 @@ export interface BackendReviewResponse {
 }
 
 export interface BackendReviewListResponse {
-  activity_id: string;
+  product_id: string;
+  product_type: string;
   total: number;
   avg_rating: number | null;
   platform_counts: Record<string, number>;
@@ -176,6 +179,13 @@ export interface BackendReviewListResponse {
 }
 
 // ---- Activity responses ----
+
+export interface BackendActivityTimelineItem {
+  order: number;
+  time_label: string | null;
+  title: string;
+  description: string | null;
+}
 
 export interface BackendActivityCard {
   id: string;
@@ -211,7 +221,8 @@ export interface BackendActivityResponse {
   included: string[] | null;
   excluded: string[] | null;
   what_to_bring: string | null;
-  important_notes: string | null;
+  important_notes: string[] | null;
+  redemption_instructions: string[] | null;
   price_adult: number;
   price_child: number | null;
   price_infant: number | null;
@@ -252,6 +263,7 @@ export interface BackendActivityResponse {
   difficulty: string | null;
   pregnancy_restriction: boolean;
   wheelchair_access: string | null;
+  dress_code_note: string | null;
   languages: string[] | null;
   cover_image_url: string | null;
   gallery_json: string[] | null;
@@ -261,6 +273,8 @@ export interface BackendActivityResponse {
   rating_5: number;
   rating_4: number;
   rating_3: number;
+  rating_2: number;
+  rating_1: number;
   review_snippets: string[] | null;
   meta_title: string | null;
   meta_description: string | null;
@@ -268,11 +282,175 @@ export interface BackendActivityResponse {
   json_ld: Record<string, unknown> | null;
   canonical_url: string | null;
   source_url: string;
+  source_urls: string[] | null;
   source_type: string;
   operator_name: string | null;
+  operator_website: string | null;
+  operator_established_year: number | null;
+  operator_certifications: string[] | null;
+  other_attributes: { label: string; value: string; category_hint?: string }[] | null;
   verified: boolean;
   dedup_hash: string;
   quality_score: number;
+  timeline: BackendActivityTimelineItem[];
+  created_at: string;
+  updated_at: string;
+}
+
+// ---- Cruise responses ----
+
+export interface BackendCruiseItineraryItem {
+  id: string;
+  order: number;
+  day_number: number | null;
+  time_label: string | null;
+  port_or_stop: string;
+  description: string | null;
+  shore_excursion_available: boolean;
+}
+
+export interface BackendCruiseCabin {
+  id: string;
+  cabin_type: string;
+  cabin_count: number | null;
+  max_occupancy: number | null;
+  amenities: string[] | null;
+  description: string | null;
+}
+
+export interface BackendCruisePricingTier {
+  id: string;
+  cabin_type: string;
+  price_adult: number | null;
+  price_child: number | null;
+  price_infant: number | null;
+  currency: string;
+  includes_description: string | null;
+}
+
+export interface BackendCruiseCard {
+  id: string;
+  name: string;
+  slug: string;
+  category: string;
+  sub_category: string | null;
+  city: string;
+  price_from: number;
+  currency: string;
+  rating: number | null;
+  review_count: number;
+  cover_image_url: string | null;
+  vessel_type: string | null;
+  cruise_type: string | null;
+  duration_hours: number | null;
+  meal_included: boolean;
+  quality_score: number;
+  status: string;
+}
+
+export interface BackendCruiseResponse {
+  id: string;
+  name: string;
+  slug: string;
+  city_id: string;
+  category: string;
+  sub_category: string | null;
+  cruise_class: string | null;
+  status: string;
+  description_short: string;
+  description_long: string;
+  highlights: string[] | null;
+  included: string[] | null;
+  excluded: string[] | null;
+  what_to_bring: string | null;
+  important_notes: string[] | null;
+  redemption_instructions: string[] | null;
+  price_adult: number;
+  price_child: number | null;
+  price_infant: number | null;
+  price_group: number | null;
+  price_original: number | null;
+  currency: string;
+  price_type: string;
+  discount_pct: number | null;
+  price_from: number;
+  duration_hours: number | null;
+  duration_days: number | null;
+  departure_times: string[] | null;
+  operating_days: string[] | null;
+  seasonal_availability: string | null;
+  advance_booking_days: number | null;
+  instant_confirmation: boolean;
+  free_cancellation: boolean;
+  cancellation_hours: number | null;
+  cancellation_policy: string | null;
+  boarding_time: string | null;
+  country: string;
+  city: string;
+  area: string | null;
+  address: string | null;
+  lat: number | null;
+  lng: number | null;
+  maps_link: string | null;
+  boarding_point_name: string | null;
+  boarding_point_description: string | null;
+  pickup_available: boolean;
+  pickup_points: string[] | null;
+  vessel_name: string | null;
+  vessel_type: string | null;
+  vessel_length_m: number | null;
+  vessel_year_built: number | null;
+  vessel_capacity: number | null;
+  deck_count: number | null;
+  onboard_facilities: string[] | null;
+  cruise_type: string | null;
+  route_description: string | null;
+  number_of_nights: number | null;
+  meal_included: boolean;
+  meal_type: string | null;
+  entertainment_included: boolean;
+  entertainment_details: string[] | null;
+  wifi_available: boolean;
+  min_age: number | null;
+  max_age: number | null;
+  age_pricing_breaks: Record<string, unknown>[] | null;
+  dress_code: string | null;
+  wheelchair_accessible: boolean;
+  languages: string[] | null;
+  fitness_level: string | null;
+  pregnancy_restriction: boolean;
+  operator_name: string | null;
+  operator_website: string | null;
+  operator_license_body: string | null;
+  operator_established_year: number | null;
+  operator_fleet_size: number | null;
+  operator_certifications: string[] | null;
+  cover_image_url: string | null;
+  gallery_json: string[] | null;
+  video_url: string | null;
+  rating: number | null;
+  review_count: number;
+  rating_5: number;
+  rating_4: number;
+  rating_3: number;
+  rating_2: number;
+  rating_1: number;
+  review_snippets: string[] | null;
+  meta_title: string | null;
+  meta_description: string | null;
+  focus_keyword: string | null;
+  json_ld: Record<string, unknown> | null;
+  canonical_url: string | null;
+  source_url: string;
+  source_urls: string[] | null;
+  source_type: string;
+  verified: boolean;
+  quality_score: number;
+  other_attributes: { label: string; value: string; category_hint?: string }[] | null;
+  dedup_hash: string;
+  itinerary: BackendCruiseItineraryItem[];
+  cabins: BackendCruiseCabin[];
+  pricing_tiers: BackendCruisePricingTier[];
   created_at: string;
   updated_at: string;
 }

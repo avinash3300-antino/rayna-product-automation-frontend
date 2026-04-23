@@ -7,14 +7,13 @@ import {
   XCircle,
   Backpack,
   AlertTriangle,
-  ClipboardList,
-  Shirt,
+  TicketCheck,
 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import type { Activity } from "@/types/activities";
+import type { Cruise } from "@/types/cruises";
 
-interface ActivityContentTabProps {
-  activity: Activity;
+interface CruiseContentTabProps {
+  cruise: Cruise;
 }
 
 function EmptyField() {
@@ -23,7 +22,7 @@ function EmptyField() {
   );
 }
 
-export function ActivityContentTab({ activity }: ActivityContentTabProps) {
+export function CruiseContentTab({ cruise }: CruiseContentTabProps) {
   return (
     <div className="space-y-6">
       {/* Short Description */}
@@ -36,7 +35,7 @@ export function ActivityContentTab({ activity }: ActivityContentTabProps) {
         </CardHeader>
         <CardContent>
           <p className="text-sm">
-            {activity.descriptionShort || <EmptyField />}
+            {cruise.descriptionShort || <EmptyField />}
           </p>
         </CardContent>
       </Card>
@@ -50,10 +49,10 @@ export function ActivityContentTab({ activity }: ActivityContentTabProps) {
           </CardTitle>
         </CardHeader>
         <CardContent>
-          {activity.descriptionLong ? (
+          {cruise.descriptionLong ? (
             <div
               className="text-sm prose prose-sm dark:prose-invert max-w-none"
-              dangerouslySetInnerHTML={{ __html: activity.descriptionLong }}
+              dangerouslySetInnerHTML={{ __html: cruise.descriptionLong }}
             />
           ) : (
             <EmptyField />
@@ -66,13 +65,13 @@ export function ActivityContentTab({ activity }: ActivityContentTabProps) {
         <CardHeader>
           <CardTitle className="text-base flex items-center gap-2">
             <ListChecks className="h-4 w-4" />
-            Highlights ({activity.highlights?.length ?? 0})
+            Highlights ({cruise.highlights?.length ?? 0})
           </CardTitle>
         </CardHeader>
         <CardContent>
-          {activity.highlights && activity.highlights.length > 0 ? (
+          {cruise.highlights && cruise.highlights.length > 0 ? (
             <ul className="space-y-2">
-              {activity.highlights.map((item, idx) => (
+              {cruise.highlights.map((item, idx) => (
                 <li key={idx} className="flex items-start gap-2 text-sm">
                   <span className="text-[#C9A84C] mt-1 shrink-0">&#8226;</span>
                   {item}
@@ -91,13 +90,13 @@ export function ActivityContentTab({ activity }: ActivityContentTabProps) {
           <CardHeader>
             <CardTitle className="text-base flex items-center gap-2">
               <CheckCircle2 className="h-4 w-4 text-emerald-600" />
-              Included ({activity.included?.length ?? 0})
+              Included ({cruise.included?.length ?? 0})
             </CardTitle>
           </CardHeader>
           <CardContent>
-            {activity.included && activity.included.length > 0 ? (
+            {cruise.included && cruise.included.length > 0 ? (
               <ul className="space-y-2">
-                {activity.included.map((item, idx) => (
+                {cruise.included.map((item, idx) => (
                   <li key={idx} className="flex items-start gap-2 text-sm">
                     <CheckCircle2 className="h-3.5 w-3.5 mt-0.5 text-emerald-600 shrink-0" />
                     {item}
@@ -114,13 +113,13 @@ export function ActivityContentTab({ activity }: ActivityContentTabProps) {
           <CardHeader>
             <CardTitle className="text-base flex items-center gap-2">
               <XCircle className="h-4 w-4 text-red-500" />
-              Excluded ({activity.excluded?.length ?? 0})
+              Excluded ({cruise.excluded?.length ?? 0})
             </CardTitle>
           </CardHeader>
           <CardContent>
-            {activity.excluded && activity.excluded.length > 0 ? (
+            {cruise.excluded && cruise.excluded.length > 0 ? (
               <ul className="space-y-2">
-                {activity.excluded.map((item, idx) => (
+                {cruise.excluded.map((item, idx) => (
                   <li key={idx} className="flex items-start gap-2 text-sm">
                     <XCircle className="h-3.5 w-3.5 mt-0.5 text-red-500 shrink-0" />
                     {item}
@@ -143,8 +142,8 @@ export function ActivityContentTab({ activity }: ActivityContentTabProps) {
           </CardTitle>
         </CardHeader>
         <CardContent>
-          {activity.whatToBring ? (
-            <p className="text-sm whitespace-pre-wrap">{activity.whatToBring}</p>
+          {cruise.whatToBring ? (
+            <p className="text-sm whitespace-pre-wrap">{cruise.whatToBring}</p>
           ) : (
             <EmptyField />
           )}
@@ -156,13 +155,13 @@ export function ActivityContentTab({ activity }: ActivityContentTabProps) {
         <CardHeader>
           <CardTitle className="text-base flex items-center gap-2">
             <AlertTriangle className="h-4 w-4 text-amber-500" />
-            Important Notes
+            Important Notes ({cruise.importantNotes?.length ?? 0})
           </CardTitle>
         </CardHeader>
         <CardContent>
-          {activity.importantNotes && activity.importantNotes.length > 0 ? (
+          {cruise.importantNotes && cruise.importantNotes.length > 0 ? (
             <ul className="space-y-2">
-              {activity.importantNotes.map((note, idx) => (
+              {cruise.importantNotes.map((note, idx) => (
                 <li key={idx} className="flex items-start gap-2 text-sm">
                   <AlertTriangle className="h-3.5 w-3.5 mt-0.5 text-amber-500 shrink-0" />
                   {note}
@@ -176,43 +175,27 @@ export function ActivityContentTab({ activity }: ActivityContentTabProps) {
       </Card>
 
       {/* Redemption Instructions */}
-      {activity.redemptionInstructions && activity.redemptionInstructions.length > 0 && (
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-base flex items-center gap-2">
-              <ClipboardList className="h-4 w-4 text-blue-500" />
-              Redemption Instructions
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <ol className="space-y-2">
-              {activity.redemptionInstructions.map((step, idx) => (
-                <li key={idx} className="flex items-start gap-3 text-sm">
-                  <span className="flex items-center justify-center h-5 w-5 rounded-full bg-blue-500/10 text-blue-500 text-xs font-bold shrink-0 mt-0.5">
-                    {idx + 1}
-                  </span>
-                  {step}
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-base flex items-center gap-2">
+            <TicketCheck className="h-4 w-4" />
+            Redemption Instructions ({cruise.redemptionInstructions?.length ?? 0})
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          {cruise.redemptionInstructions && cruise.redemptionInstructions.length > 0 ? (
+            <ol className="space-y-2 list-decimal list-inside">
+              {cruise.redemptionInstructions.map((instruction, idx) => (
+                <li key={idx} className="text-sm">
+                  {instruction}
                 </li>
               ))}
             </ol>
-          </CardContent>
-        </Card>
-      )}
-
-      {/* Dress Code Note */}
-      {activity.dressCodeNote && (
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-base flex items-center gap-2">
-              <Shirt className="h-4 w-4" />
-              Dress Code
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <p className="text-sm">{activity.dressCodeNote}</p>
-          </CardContent>
-        </Card>
-      )}
+          ) : (
+            <EmptyField />
+          )}
+        </CardContent>
+      </Card>
     </div>
   );
 }

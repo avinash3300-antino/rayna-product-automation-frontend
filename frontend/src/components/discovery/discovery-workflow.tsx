@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect } from "react";
 import { Loader2, Search, List, Zap, CheckCircle2 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -12,6 +12,7 @@ import { RunDiscoveryForm } from "./run-discovery-form";
 import { DiscoveryRunStatusCard } from "./discovery-run-status";
 import { SourcesTable } from "./sources-table";
 import { TriggerScrapingButton } from "./trigger-scraping-button";
+import { PipelineProgressPanel } from "./pipeline-progress-panel";
 import { toast } from "sonner";
 
 type WorkflowStep = 1 | 2 | 3;
@@ -62,10 +63,68 @@ function StepIndicator({ step, currentStep, label, icon }: StepIndicatorProps) {
   );
 }
 
+const STORAGE_KEY = "discovery-workflow-state";
+
+interface PersistedState {
+  currentStep: WorkflowStep;
+  currentRunId: string | null;
+  selectedCategory: string;
+  pipelineJobIds: string[];
+}
+
+function loadPersistedState(): PersistedState | null {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (!raw) return null;
+    const parsed = JSON.parse(raw);
+    if (parsed && typeof parsed.currentStep === "number") return parsed;
+  } catch {
+    // ignore corrupt data
+  }
+  return null;
+}
+
+function savePersistedState(state: PersistedState) {
+  try {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+  } catch {
+    // storage full or unavailable
+  }
+}
+
+function clearPersistedState() {
+  try {
+    localStorage.removeItem(STORAGE_KEY);
+  } catch {
+    // ignore
+  }
+}
+
 export function DiscoveryWorkflow() {
-  const [currentStep, setCurrentStep] = useState<WorkflowStep>(1);
-  const [currentRunId, setCurrentRunId] = useState<string | null>(null);
-  const [selectedCategory, setSelectedCategory] = useState<string>("");
+  const saved = typeof window !== "undefined" ? loadPersistedState() : null;
+
+  const [currentStep, setCurrentStep] = useState<WorkflowStep>(
+    saved?.currentStep ?? 1
+  );
+  const [currentRunId, setCurrentRunId] = useState<string | null>(
+    saved?.currentRunId ?? null
+  );
+  const [selectedCategory, setSelectedCategory] = useState<string>(
+    saved?.selectedCategory ?? ""
+  );
+  const [pipelineJobIds, setPipelineJobIds] = useState<string[]>(
+    saved?.pipelineJobIds ?? []
+  );
+
+  // Persist state to localStorage on every change
+  useEffect(() => {
+    savePersistedState({
+      currentStep,
+      currentRunId,
+      selectedCategory,
+      pipelineJobIds,
+    });
+  }, [currentStep, currentRunId, selectedCategory, pipelineJobIds]);
 
   const triggerDiscovery = useTriggerDiscovery();
 
@@ -90,11 +149,11 @@ export function DiscoveryWorkflow() {
   const isRunComplete =
     run?.status === "completed" || run?.status === "failed";
 
-  function handleTriggerDiscovery(cityId: string, category: string) {
+  function handleTriggerDiscovery(cityId: string, category: string, productType: string = "activities") {
     setSelectedCategory(category);
 
     triggerDiscovery.mutate(
-      { city_id: cityId, category },
+      { city_id: cityId, category, product_type: productType },
       {
         onSuccess: (data) => {
           setCurrentRunId(data.id);
@@ -124,6 +183,8 @@ export function DiscoveryWorkflow() {
     setCurrentStep(1);
     setCurrentRunId(null);
     setSelectedCategory("");
+    setPipelineJobIds([]);
+    clearPersistedState();
   }
 
   const approvedCount = sources?.filter((s) => s.approved).length ?? 0;
@@ -281,7 +342,12 @@ export function DiscoveryWorkflow() {
             runId={currentRunId}
             category={selectedCategory}
             approvedCount={approvedCount}
+            onJobsCreated={setPipelineJobIds}
           />
+
+          {pipelineJobIds.length > 0 && (
+            <PipelineProgressPanel jobIds={pipelineJobIds} />
+          )}
         </div>
       )}
     </div>

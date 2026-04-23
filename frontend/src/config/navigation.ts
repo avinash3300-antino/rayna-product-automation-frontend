@@ -7,6 +7,7 @@ import {
   SlidersHorizontal,
   Link,
   Tag,
+  Ship,
   Package,
   CheckCircle,
   History,
@@ -59,6 +60,7 @@ export const navigation: NavSection[] = [
     items: [
       { title: "Product Browser", href: "/products", icon: LayoutGrid },
       { title: "Activities", href: "/activities", icon: Ticket },
+      { title: "Cruises", href: "/cruises", icon: Ship },
       {
         title: "Attribute Editor",
         href: "/attributes",

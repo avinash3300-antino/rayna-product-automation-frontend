@@ -18,6 +18,7 @@ interface ListScrapeJobsParams {
   city_id?: string;
   category?: string;
   status?: string;
+  product_type?: string;
   page?: number;
   perPage?: number;
 }
@@ -32,6 +33,7 @@ export function useScrapeJobs(params: ListScrapeJobsParams = {}) {
       if (params.city_id) searchParams.set("city_id", params.city_id);
       if (params.category) searchParams.set("category", params.category);
       if (params.status) searchParams.set("status", params.status);
+      if (params.product_type) searchParams.set("product_type", params.product_type);
       if (params.page) searchParams.set("page", String(params.page));
       if (params.perPage) searchParams.set("per_page", String(params.perPage));
 

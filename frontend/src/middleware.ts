@@ -27,5 +27,6 @@ export const config = {
     "/discovery/:path*",
     "/scraping/:path*",
     "/activities/:path*",
+    "/cruises/:path*",
   ],
 };

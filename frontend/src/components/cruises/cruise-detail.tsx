@@ -16,26 +16,22 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { cn } from "@/lib/utils";
-import { useActivity, useReEnrichActivity } from "@/hooks/api/use-activities";
-import { ActivityOverviewTab } from "./activity-overview-tab";
-import { ActivityContentTab } from "./activity-content-tab";
-import { ActivityLocationTab } from "./activity-location-tab";
-import { ActivityPricingTab } from "./activity-pricing-tab";
-import { ActivitySeoTab } from "./activity-seo-tab";
-import { ActivityMediaTab } from "./activity-media-tab";
-import { ActivityTimelineTab } from "./activity-timeline-tab";
-import { ActivityOperatorTab } from "./activity-operator-tab";
-import { ActivitySourceTab } from "./activity-source-tab";
-import { ActivityReviewsTab } from "./activity-reviews-tab";
-import { DeleteActivityDialog } from "./delete-activity-dialog";
-import { UpdateStatusDialog } from "./update-status-dialog";
-import type { ActivityStatus } from "@/types/activities";
+import { useCruise, useReEnrichCruise } from "@/hooks/api/use-cruises";
+import { CruiseOverviewTab } from "./cruise-overview-tab";
+import { CruiseContentTab } from "./cruise-content-tab";
+import { CruiseItineraryTab } from "./cruise-itinerary-tab";
+import { CruiseVesselTab } from "./cruise-vessel-tab";
+import { CruisePricingTab } from "./cruise-pricing-tab";
+import { CruiseSourceTab } from "./cruise-source-tab";
+import { DeleteCruiseDialog } from "./delete-cruise-dialog";
+import { UpdateCruiseStatusDialog } from "./update-cruise-status-dialog";
+import type { CruiseStatus } from "@/types/cruises";
 
-interface ActivityDetailProps {
-  activityId: string;
+interface CruiseDetailProps {
+  cruiseId: string;
 }
 
-const statusStyles: Record<ActivityStatus, string> = {
+const statusStyles: Record<CruiseStatus, string> = {
   draft: "bg-muted text-muted-foreground",
   enriched: "bg-blue-500/10 text-blue-500 border-blue-500/20",
   review_ready: "bg-amber-500/10 text-amber-600 border-amber-500/20",
@@ -49,17 +45,17 @@ function getQualityScoreStyle(score: number): string {
   return "bg-red-500/10 text-red-600 border-red-500/20";
 }
 
-export function ActivityDetail({ activityId }: ActivityDetailProps) {
+export function CruiseDetail({ cruiseId }: CruiseDetailProps) {
   const router = useRouter();
   const [editing, setEditing] = useState(false);
   const [deleteOpen, setDeleteOpen] = useState(false);
   const [statusOpen, setStatusOpen] = useState(false);
 
-  const { data: activity, isLoading, isError } = useActivity(activityId);
-  const reEnrich = useReEnrichActivity();
+  const { data: cruise, isLoading, isError } = useCruise(cruiseId);
+  const reEnrich = useReEnrichCruise();
 
   const handleReEnrich = () => {
-    reEnrich.mutate(activityId, {
+    reEnrich.mutate(cruiseId, {
       onSuccess: () => {
         toast.success("Re-enrichment started successfully");
       },
@@ -73,22 +69,22 @@ export function ActivityDetail({ activityId }: ActivityDetailProps) {
     return (
       <div className="flex flex-col items-center justify-center py-20 text-muted-foreground">
         <Loader2 className="h-8 w-8 animate-spin mb-3" />
-        <p className="text-sm">Loading activity...</p>
+        <p className="text-sm">Loading cruise...</p>
       </div>
     );
   }
 
-  if (isError || !activity) {
+  if (isError || !cruise) {
     return (
       <div className="flex flex-col items-center justify-center py-20 text-muted-foreground">
-        <p className="text-lg font-medium">Activity not found</p>
+        <p className="text-lg font-medium">Cruise not found</p>
         <Button
           variant="outline"
           className="mt-4"
-          onClick={() => router.push("/activities")}
+          onClick={() => router.push("/cruises")}
         >
           <ArrowLeft className="h-4 w-4 mr-2" />
-          Back to Activities
+          Back to Cruises
         </Button>
       </div>
     );
@@ -103,36 +99,37 @@ export function ActivityDetail({ activityId }: ActivityDetailProps) {
             variant="ghost"
             size="icon"
             className="h-8 w-8 mt-0.5"
-            onClick={() => router.push("/activities")}
+            onClick={() => router.push("/cruises")}
           >
             <ArrowLeft className="h-4 w-4" />
           </Button>
           <div>
             <div className="flex items-center gap-2 flex-wrap">
               <h2 className="text-2xl font-bold tracking-tight">
-                {activity.name}
+                {cruise.name}
               </h2>
               <Badge
                 variant="secondary"
                 className={cn(
                   "text-xs capitalize",
-                  statusStyles[activity.status]
+                  statusStyles[cruise.status]
                 )}
               >
-                {activity.status.replace("_", " ")}
+                {cruise.status.replace("_", " ")}
               </Badge>
               <Badge
                 variant="secondary"
                 className={cn(
                   "text-xs",
-                  getQualityScoreStyle(activity.qualityScore)
+                  getQualityScoreStyle(cruise.qualityScore)
                 )}
               >
-                Quality: {activity.qualityScore}
+                Quality: {cruise.qualityScore}
               </Badge>
             </div>
             <p className="text-muted-foreground text-sm mt-0.5">
-              {activity.city}, {activity.country} &middot; {activity.category}
+              {cruise.city}, {cruise.country} &middot; {cruise.category}
+              {cruise.cruiseType && <> &middot; {cruise.cruiseType}</>}
             </p>
           </div>
         </div>
@@ -194,67 +191,47 @@ export function ActivityDetail({ activityId }: ActivityDetailProps) {
         <TabsList className="w-full justify-start overflow-x-auto">
           <TabsTrigger value="overview">Overview</TabsTrigger>
           <TabsTrigger value="content">Content</TabsTrigger>
-          <TabsTrigger value="timeline">Timeline</TabsTrigger>
-          <TabsTrigger value="location">Location</TabsTrigger>
+          <TabsTrigger value="itinerary">Itinerary</TabsTrigger>
+          <TabsTrigger value="vessel">Vessel</TabsTrigger>
           <TabsTrigger value="pricing">Pricing</TabsTrigger>
-          <TabsTrigger value="seo">SEO</TabsTrigger>
-          <TabsTrigger value="media">Media</TabsTrigger>
-          <TabsTrigger value="reviews">Reviews</TabsTrigger>
-          <TabsTrigger value="operator">Operator</TabsTrigger>
           <TabsTrigger value="source">Source</TabsTrigger>
         </TabsList>
 
         <TabsContent value="overview">
-          <ActivityOverviewTab activity={activity} />
+          <CruiseOverviewTab cruise={cruise} />
         </TabsContent>
 
         <TabsContent value="content">
-          <ActivityContentTab activity={activity} />
+          <CruiseContentTab cruise={cruise} />
         </TabsContent>
 
-        <TabsContent value="timeline">
-          <ActivityTimelineTab activity={activity} />
+        <TabsContent value="itinerary">
+          <CruiseItineraryTab cruise={cruise} />
         </TabsContent>
 
-        <TabsContent value="location">
-          <ActivityLocationTab activity={activity} />
+        <TabsContent value="vessel">
+          <CruiseVesselTab cruise={cruise} />
         </TabsContent>
 
         <TabsContent value="pricing">
-          <ActivityPricingTab activity={activity} />
-        </TabsContent>
-
-        <TabsContent value="seo">
-          <ActivitySeoTab activity={activity} />
-        </TabsContent>
-
-        <TabsContent value="media">
-          <ActivityMediaTab activity={activity} />
-        </TabsContent>
-
-        <TabsContent value="reviews">
-          <ActivityReviewsTab activity={activity} />
-        </TabsContent>
-
-        <TabsContent value="operator">
-          <ActivityOperatorTab activity={activity} />
+          <CruisePricingTab cruise={cruise} />
         </TabsContent>
 
         <TabsContent value="source">
-          <ActivitySourceTab activity={activity} />
+          <CruiseSourceTab cruise={cruise} />
         </TabsContent>
       </Tabs>
 
       {/* Dialogs */}
-      <DeleteActivityDialog
+      <DeleteCruiseDialog
         open={deleteOpen}
         onOpenChange={setDeleteOpen}
-        activity={activity}
+        cruise={cruise}
       />
-      <UpdateStatusDialog
+      <UpdateCruiseStatusDialog
         open={statusOpen}
         onOpenChange={setStatusOpen}
-        activity={activity}
+        cruise={cruise}
       />
     </div>
   );

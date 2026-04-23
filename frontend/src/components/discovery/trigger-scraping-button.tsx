@@ -16,12 +16,14 @@ interface TriggerScrapingButtonProps {
   runId: string;
   category: string;
   approvedCount: number;
+  onJobsCreated?: (jobIds: string[]) => void;
 }
 
 export function TriggerScrapingButton({
   runId,
   category,
   approvedCount,
+  onJobsCreated,
 }: TriggerScrapingButtonProps) {
   const triggerScraping = useTriggerScraping();
 
@@ -31,10 +33,11 @@ export function TriggerScrapingButton({
       {
         onSuccess: (jobs) => {
           toast.success(
-            `Scraping triggered successfully. ${jobs.length} job${
+            `Pipeline started! Tracking ${jobs.length} source${
               jobs.length !== 1 ? "s" : ""
-            } created.`
+            }...`
           );
+          onJobsCreated?.(jobs.map((j) => j.id));
         },
         onError: (err) => {
           toast.error(

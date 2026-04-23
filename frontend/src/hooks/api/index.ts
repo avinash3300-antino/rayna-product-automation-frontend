@@ -41,3 +41,12 @@ export {
   useDeleteActivity,
   useReEnrichActivity,
 } from "./use-activities";
+export {
+  useCruises,
+  useCruise,
+  useCruiseCities,
+  useUpdateCruise,
+  useUpdateCruiseStatus,
+  useDeleteCruise,
+  useReEnrichCruise,
+} from "./use-cruises";

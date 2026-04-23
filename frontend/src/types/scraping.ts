@@ -12,6 +12,7 @@ export interface ScrapeJob {
   discoveryRunId: string | null;
   cityId: string;
   category: string;
+  productType: string;
   status: ScrapeJobStatus;
   sourceId: string | null;
   sourceUrl: string;

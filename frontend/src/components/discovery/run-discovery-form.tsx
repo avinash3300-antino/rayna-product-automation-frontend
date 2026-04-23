@@ -21,32 +21,64 @@ import {
 import { useDestinations } from "@/hooks/api/use-destinations";
 
 interface RunDiscoveryFormProps {
-  onSubmit: (cityId: string, category: string) => void;
+  onSubmit: (cityId: string, category: string, productType: string) => void;
   isPending: boolean;
 }
 
-const CATEGORIES = [
-  { value: "adventure", label: "Adventure" },
-  { value: "cultural", label: "Cultural" },
-  { value: "luxury", label: "Luxury" },
-  { value: "nature", label: "Nature" },
-  { value: "food_drink", label: "Food & Drink" },
-  { value: "nightlife", label: "Nightlife" },
+const ACTIVITY_CATEGORIES = [
+  { value: "Sightseeing Tours", label: "Sightseeing Tours" },
+  { value: "Landmark Tickets", label: "Landmark Tickets" },
+  { value: "Museum & Gallery", label: "Museum & Gallery" },
+  { value: "Thames River", label: "Thames River" },
+  { value: "Day Trips", label: "Day Trips" },
+  { value: "Harry Potter & Film", label: "Harry Potter & Film" },
+  { value: "Food & Drink", label: "Food & Drink" },
+  { value: "Shows & Entertainment", label: "Shows & Entertainment" },
+  { value: "Passes & Combos", label: "Passes & Combos" },
+  { value: "Transfers", label: "Transfers" },
+  { value: "Sports & Outdoor", label: "Sports & Outdoor" },
+  { value: "Night Tours", label: "Night Tours" },
+  { value: "Family & Kids", label: "Family & Kids" },
+  { value: "Luxury & Private", label: "Luxury & Private" },
+  { value: "Seasonal & Events", label: "Seasonal & Events" },
+] as const;
+
+const CRUISE_CATEGORIES = [
+  { value: "Dinner Cruise", label: "Dinner Cruise" },
+  { value: "Sightseeing Cruise", label: "Sightseeing Cruise" },
+  { value: "Overnight Cruise", label: "Overnight Cruise" },
+  { value: "Multi-Day Cruise", label: "Multi-Day Cruise" },
+  { value: "River Cruise", label: "River Cruise" },
+  { value: "Luxury Cruise", label: "Luxury Cruise" },
+] as const;
+
+const PRODUCT_TYPES = [
+  { value: "activities", label: "Activities" },
+  { value: "cruises", label: "Cruises" },
 ] as const;
 
 export function RunDiscoveryForm({ onSubmit, isPending }: RunDiscoveryFormProps) {
+  const [selectedProductType, setSelectedProductType] = useState("activities");
   const [selectedCityId, setSelectedCityId] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("");
+
+  const categories =
+    selectedProductType === "cruises" ? CRUISE_CATEGORIES : ACTIVITY_CATEGORIES;
 
   const { data: destinationsData, isLoading: isLoadingDestinations } =
     useDestinations({ perPage: 100 });
 
   const destinations = destinationsData?.data ?? [];
 
+  function handleProductTypeChange(value: string) {
+    setSelectedProductType(value);
+    setSelectedCategory("");
+  }
+
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     if (!selectedCityId || !selectedCategory) return;
-    onSubmit(selectedCityId, selectedCategory);
+    onSubmit(selectedCityId, selectedCategory, selectedProductType);
   }
 
   const isFormValid = selectedCityId && selectedCategory;
@@ -65,6 +97,26 @@ export function RunDiscoveryForm({ onSubmit, isPending }: RunDiscoveryFormProps)
       </CardHeader>
       <CardContent>
         <form onSubmit={handleSubmit} className="space-y-4">
+          {/* Product Type */}
+          <div className="space-y-2">
+            <Label htmlFor="product-type-select">Product Type</Label>
+            <Select
+              value={selectedProductType}
+              onValueChange={handleProductTypeChange}
+            >
+              <SelectTrigger id="product-type-select">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {PRODUCT_TYPES.map((pt) => (
+                  <SelectItem key={pt.value} value={pt.value}>
+                    {pt.label}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div className="space-y-2">
               <Label htmlFor="city-select">Destination</Label>
@@ -102,7 +154,7 @@ export function RunDiscoveryForm({ onSubmit, isPending }: RunDiscoveryFormProps)
                   <SelectValue placeholder="Select category" />
                 </SelectTrigger>
                 <SelectContent>
-                  {CATEGORIES.map((cat) => (
+                  {categories.map((cat) => (
                     <SelectItem key={cat.value} value={cat.value}>
                       {cat.label}
                     </SelectItem>

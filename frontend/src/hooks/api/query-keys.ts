@@ -42,4 +42,12 @@ export const queryKeys = {
     reviews: (id: string) => ["activities", "reviews", id] as const,
     cities: ["activities", "cities"] as const,
   },
+  cruises: {
+    all: ["cruises"] as const,
+    list: (params: Record<string, unknown>) =>
+      ["cruises", "list", params] as const,
+    detail: (id: string) => ["cruises", "detail", id] as const,
+    reviews: (id: string) => ["cruises", "reviews", id] as const,
+    cities: ["cruises", "cities"] as const,
+  },
 };

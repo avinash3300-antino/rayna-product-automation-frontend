@@ -40,10 +40,21 @@ const STATUS_OPTIONS = [
 
 const CATEGORY_OPTIONS = [
   { value: "all", label: "All Categories" },
-  { value: "hotels", label: "Hotels" },
-  { value: "attractions", label: "Attractions" },
-  { value: "transfers", label: "Transfers" },
-  { value: "restaurants", label: "Restaurants" },
+  { value: "Activities", label: "Activities" },
+  { value: "Adventure", label: "Adventure" },
+  { value: "Cultural", label: "Cultural" },
+  { value: "Water Sports", label: "Water Sports" },
+  { value: "Nature", label: "Nature" },
+  { value: "Day Trip", label: "Day Trip" },
+  { value: "Dinner Cruise", label: "Dinner Cruise" },
+  { value: "Sightseeing Cruise", label: "Sightseeing Cruise" },
+  { value: "Luxury Cruise", label: "Luxury Cruise" },
+];
+
+const PRODUCT_TYPE_OPTIONS = [
+  { value: "all", label: "All Types" },
+  { value: "activities", label: "Activities" },
+  { value: "cruises", label: "Cruises" },
 ];
 
 const PAGE_SIZE = 20;
@@ -52,6 +63,7 @@ export function ScrapingDashboard() {
   const [cityFilter, setCityFilter] = useState("all");
   const [categoryFilter, setCategoryFilter] = useState("all");
   const [statusFilter, setStatusFilter] = useState("all");
+  const [productTypeFilter, setProductTypeFilter] = useState("all");
   const [currentPage, setCurrentPage] = useState(1);
 
   // Sheet state
@@ -70,6 +82,7 @@ export function ScrapingDashboard() {
     city_id: cityFilter !== "all" ? cityFilter : undefined,
     category: categoryFilter !== "all" ? categoryFilter : undefined,
     status: statusFilter !== "all" ? statusFilter : undefined,
+    product_type: productTypeFilter !== "all" ? productTypeFilter : undefined,
     page: currentPage,
     perPage: PAGE_SIZE,
   });
@@ -110,6 +123,11 @@ export function ScrapingDashboard() {
 
   const handleStatusChange = useCallback((val: string) => {
     setStatusFilter(val);
+    setCurrentPage(1);
+  }, []);
+
+  const handleProductTypeChange = useCallback((val: string) => {
+    setProductTypeFilter(val);
     setCurrentPage(1);
   }, []);
 
@@ -174,6 +192,19 @@ export function ScrapingDashboard() {
             </SelectTrigger>
             <SelectContent className="bg-navy border-border/50">
               {STATUS_OPTIONS.map((opt) => (
+                <SelectItem key={opt.value} value={opt.value}>
+                  {opt.label}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+
+          <Select value={productTypeFilter} onValueChange={handleProductTypeChange}>
+            <SelectTrigger className="w-[150px] bg-navy-light/50 border-border/50">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent className="bg-navy border-border/50">
+              {PRODUCT_TYPE_OPTIONS.map((opt) => (
                 <SelectItem key={opt.value} value={opt.value}>
                   {opt.label}
                 </SelectItem>

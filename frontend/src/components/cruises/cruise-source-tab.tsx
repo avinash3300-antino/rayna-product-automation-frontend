@@ -9,15 +9,16 @@ import {
   MessageSquare,
   Link2,
   Building2,
+  Ship,
   Award,
 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
-import type { Activity } from "@/types/activities";
+import type { Cruise } from "@/types/cruises";
 
-interface ActivitySourceTabProps {
-  activity: Activity;
+interface CruiseSourceTabProps {
+  cruise: Cruise;
 }
 
 function EmptyField() {
@@ -45,10 +46,34 @@ function formatDate(dateStr: string): string {
   });
 }
 
-export function ActivitySourceTab({ activity }: ActivitySourceTabProps) {
-  const sourceUrls: string[] = activity.sourceUrls ?? [activity.sourceUrl];
+function RatingBar({
+  label,
+  count,
+  total,
+}: {
+  label: string;
+  count: number;
+  total: number;
+}) {
+  const pct = total > 0 ? Math.round((count / total) * 100) : 0;
+
+  return (
+    <div className="flex items-center gap-3">
+      <span className="text-xs text-muted-foreground w-14 shrink-0">
+        {label}
+      </span>
+      <Progress value={pct} className="h-2 flex-1" />
+      <span className="text-xs text-muted-foreground w-12 text-right shrink-0">
+        {count} ({pct}%)
+      </span>
+    </div>
+  );
+}
+
+export function CruiseSourceTab({ cruise }: CruiseSourceTabProps) {
+  const sourceUrls: string[] = cruise.sourceUrls ?? [cruise.sourceUrl];
   const totalRatings =
-    activity.rating5 + activity.rating4 + activity.rating3 + activity.rating2 + activity.rating1;
+    cruise.rating5 + cruise.rating4 + cruise.rating3 + cruise.rating2 + cruise.rating1;
 
   return (
     <div className="space-y-6">
@@ -64,12 +89,8 @@ export function ActivitySourceTab({ activity }: ActivitySourceTabProps) {
           <FieldRow
             label="Source Type"
             value={
-              <span className="capitalize">{activity.sourceType}</span>
+              <span className="capitalize">{cruise.sourceType}</span>
             }
-          />
-          <FieldRow
-            label="Operator Name"
-            value={activity.operatorName || <EmptyField />}
           />
           <FieldRow
             label="Verified"
@@ -77,13 +98,13 @@ export function ActivitySourceTab({ activity }: ActivitySourceTabProps) {
               <Badge
                 variant="secondary"
                 className={
-                  activity.verified
+                  cruise.verified
                     ? "bg-emerald-500/10 text-emerald-600 border-emerald-500/20"
                     : "bg-muted text-muted-foreground"
                 }
               >
                 <ShieldCheck className="h-3 w-3 mr-1" />
-                {activity.verified ? "Verified" : "Not Verified"}
+                {cruise.verified ? "Verified" : "Not Verified"}
               </Badge>
             }
           />
@@ -91,7 +112,7 @@ export function ActivitySourceTab({ activity }: ActivitySourceTabProps) {
             label="Dedup Hash"
             value={
               <code className="text-xs bg-muted px-2 py-1 rounded font-mono max-w-xs truncate block text-right">
-                {activity.dedupHash}
+                {cruise.dedupHash}
               </code>
             }
           />
@@ -99,47 +120,74 @@ export function ActivitySourceTab({ activity }: ActivitySourceTabProps) {
       </Card>
 
       {/* Operator Details */}
-      {(activity.operatorName || activity.operatorWebsite || activity.operatorEstablishedYear || (activity.operatorCertifications && activity.operatorCertifications.length > 0)) && (
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-base flex items-center gap-2">
-              <Building2 className="h-4 w-4" />
-              Operator Details
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-1 divide-y divide-border">
-            <FieldRow
-              label="Operator Name"
-              value={activity.operatorName || <EmptyField />}
-            />
-            {activity.operatorWebsite && (
-              <FieldRow
-                label="Website"
-                value={
-                  <a
-                    href={activity.operatorWebsite}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="inline-flex items-center gap-1 text-blue-500 hover:text-blue-400 underline underline-offset-2"
-                  >
-                    {activity.operatorWebsite.replace(/^https?:\/\//, "")}
-                    <ExternalLink className="h-3 w-3" />
-                  </a>
-                }
-              />
-            )}
-            {activity.operatorEstablishedYear && (
-              <FieldRow
-                label="Established"
-                value={activity.operatorEstablishedYear}
-              />
-            )}
-            {activity.operatorCertifications && activity.operatorCertifications.length > 0 && (
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-base flex items-center gap-2">
+            <Building2 className="h-4 w-4" />
+            Operator Details
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-1 divide-y divide-border">
+          <FieldRow
+            label="Operator Name"
+            value={cruise.operatorName || <EmptyField />}
+          />
+          <FieldRow
+            label="Website"
+            value={
+              cruise.operatorWebsite ? (
+                <a
+                  href={cruise.operatorWebsite}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-1 text-blue-500 hover:text-blue-400 underline underline-offset-2"
+                >
+                  {cruise.operatorWebsite}
+                  <ExternalLink className="h-3 w-3" />
+                </a>
+              ) : (
+                <EmptyField />
+              )
+            }
+          />
+          <FieldRow
+            label="License Body"
+            value={cruise.operatorLicenseBody || <EmptyField />}
+          />
+          <FieldRow
+            label="Established Year"
+            value={
+              cruise.operatorEstablishedYear !== null
+                ? cruise.operatorEstablishedYear
+                : <EmptyField />
+            }
+          />
+          <FieldRow
+            label="Fleet Size"
+            value={
+              cruise.operatorFleetSize !== null ? (
+                <span className="flex items-center gap-1">
+                  <Ship className="h-3.5 w-3.5" />
+                  {cruise.operatorFleetSize} vessels
+                </span>
+              ) : (
+                <EmptyField />
+              )
+            }
+          />
+          {cruise.operatorCertifications &&
+            cruise.operatorCertifications.length > 0 && (
               <div className="py-2">
-                <span className="text-sm text-muted-foreground">Certifications</span>
-                <div className="flex flex-wrap gap-2 mt-2">
-                  {activity.operatorCertifications.map((cert, idx) => (
-                    <Badge key={idx} variant="outline" className="text-xs gap-1">
+                <p className="text-sm text-muted-foreground mb-2">
+                  Certifications
+                </p>
+                <div className="flex flex-wrap gap-2">
+                  {cruise.operatorCertifications.map((cert, idx) => (
+                    <Badge
+                      key={idx}
+                      variant="outline"
+                      className="text-xs gap-1"
+                    >
                       <Award className="h-3 w-3" />
                       {cert}
                     </Badge>
@@ -147,9 +195,8 @@ export function ActivitySourceTab({ activity }: ActivitySourceTabProps) {
                 </div>
               </div>
             )}
-          </CardContent>
-        </Card>
-      )}
+        </CardContent>
+      </Card>
 
       {/* Source URLs */}
       <Card>
@@ -193,8 +240,8 @@ export function ActivitySourceTab({ activity }: ActivitySourceTabProps) {
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-1 divide-y divide-border">
-          <FieldRow label="Created At" value={formatDate(activity.createdAt)} />
-          <FieldRow label="Updated At" value={formatDate(activity.updatedAt)} />
+          <FieldRow label="Created At" value={formatDate(cruise.createdAt)} />
+          <FieldRow label="Updated At" value={formatDate(cruise.updatedAt)} />
         </CardContent>
       </Card>
 
@@ -210,12 +257,12 @@ export function ActivitySourceTab({ activity }: ActivitySourceTabProps) {
           <div className="flex items-center gap-4">
             <div className="text-center">
               <p className="text-3xl font-bold">
-                {activity.rating !== null ? activity.rating.toFixed(1) : "--"}
+                {cruise.rating !== null ? cruise.rating.toFixed(1) : "--"}
               </p>
               <p className="text-xs text-muted-foreground">Overall Rating</p>
             </div>
             <div className="text-center">
-              <p className="text-3xl font-bold">{activity.reviewCount}</p>
+              <p className="text-3xl font-bold">{cruise.reviewCount}</p>
               <p className="text-xs text-muted-foreground">Total Reviews</p>
             </div>
           </div>
@@ -224,27 +271,27 @@ export function ActivitySourceTab({ activity }: ActivitySourceTabProps) {
             <div className="space-y-3">
               <RatingBar
                 label="5 stars"
-                count={activity.rating5}
+                count={cruise.rating5}
                 total={totalRatings}
               />
               <RatingBar
                 label="4 stars"
-                count={activity.rating4}
+                count={cruise.rating4}
                 total={totalRatings}
               />
               <RatingBar
                 label="3 stars"
-                count={activity.rating3}
+                count={cruise.rating3}
                 total={totalRatings}
               />
               <RatingBar
                 label="2 stars"
-                count={activity.rating2}
+                count={cruise.rating2}
                 total={totalRatings}
               />
               <RatingBar
                 label="1 star"
-                count={activity.rating1}
+                count={cruise.rating1}
                 total={totalRatings}
               />
             </div>
@@ -253,72 +300,30 @@ export function ActivitySourceTab({ activity }: ActivitySourceTabProps) {
       </Card>
 
       {/* Review Snippets */}
-      {activity.reviewSnippets && activity.reviewSnippets.length > 0 && (
+      {cruise.reviewSnippets && cruise.reviewSnippets.length > 0 && (
         <Card>
           <CardHeader>
             <CardTitle className="text-base flex items-center gap-2">
               <MessageSquare className="h-4 w-4" />
-              Review Snippets ({activity.reviewSnippets.length})
+              Review Snippets ({cruise.reviewSnippets.length})
             </CardTitle>
           </CardHeader>
           <CardContent>
             <div className="space-y-3">
-              {activity.reviewSnippets.map((snippet, idx) => {
-                const text = typeof snippet === "string" ? snippet : snippet.text;
-                const author = typeof snippet === "object" && snippet.author ? snippet.author : null;
-                const rating = typeof snippet === "object" && snippet.rating ? snippet.rating : null;
-                return (
-                  <div
-                    key={idx}
-                    className="p-3 rounded-md border bg-muted/30 text-sm"
-                  >
-                    <div>
-                      <span className="text-muted-foreground mr-1">&ldquo;</span>
-                      {text}
-                      <span className="text-muted-foreground ml-1">&rdquo;</span>
-                    </div>
-                    {(author || rating) && (
-                      <div className="mt-1.5 flex items-center gap-2 text-xs text-muted-foreground">
-                        {author && <span>— {author}</span>}
-                        {rating && (
-                          <span className="flex items-center gap-0.5">
-                            <Star className="h-3 w-3 fill-yellow-400 text-yellow-400" />
-                            {rating}
-                          </span>
-                        )}
-                      </div>
-                    )}
-                  </div>
-                );
-              })}
+              {cruise.reviewSnippets.map((snippet, idx) => (
+                <div
+                  key={idx}
+                  className="p-3 rounded-md border bg-muted/30 text-sm"
+                >
+                  <span className="text-muted-foreground mr-1">&ldquo;</span>
+                  {snippet}
+                  <span className="text-muted-foreground ml-1">&rdquo;</span>
+                </div>
+              ))}
             </div>
           </CardContent>
         </Card>
       )}
-    </div>
-  );
-}
-
-function RatingBar({
-  label,
-  count,
-  total,
-}: {
-  label: string;
-  count: number;
-  total: number;
-}) {
-  const pct = total > 0 ? Math.round((count / total) * 100) : 0;
-
-  return (
-    <div className="flex items-center gap-3">
-      <span className="text-xs text-muted-foreground w-14 shrink-0">
-        {label}
-      </span>
-      <Progress value={pct} className="h-2 flex-1" />
-      <span className="text-xs text-muted-foreground w-12 text-right shrink-0">
-        {count} ({pct}%)
-      </span>
     </div>
   );
 }

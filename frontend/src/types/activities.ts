@@ -5,6 +5,13 @@ export type ActivityStatus =
   | "approved"
   | "published";
 
+export interface ActivityTimelineItem {
+  order: number;
+  timeLabel: string | null;
+  title: string;
+  description: string | null;
+}
+
 export interface ActivityCardItem {
   id: string;
   name: string;
@@ -39,7 +46,8 @@ export interface Activity {
   included: string[] | null;
   excluded: string[] | null;
   whatToBring: string | null;
-  importantNotes: string | null;
+  importantNotes: string[] | null;
+  redemptionInstructions: string[] | null;
   priceAdult: number;
   priceChild: number | null;
   priceInfant: number | null;
@@ -80,15 +88,18 @@ export interface Activity {
   difficulty: string | null;
   pregnancyRestriction: boolean;
   wheelchairAccess: string | null;
+  dressCodeNote: string | null;
   languages: string[] | null;
   coverImageUrl: string | null;
-  galleryJson: (string | { url: string; alt_text?: string; size_variant?: string; cloudinary_id?: string })[] | null;
+  galleryJson: (string | { url: string; alt_text?: string; s3_key?: string })[] | null;
   videoUrl: string | null;
   rating: number | null;
   reviewCount: number;
   rating5: number;
   rating4: number;
   rating3: number;
+  rating2: number;
+  rating1: number;
   reviewSnippets: string[] | null;
   metaTitle: string | null;
   metaDescription: string | null;
@@ -96,11 +107,17 @@ export interface Activity {
   jsonLd: Record<string, unknown> | null;
   canonicalUrl: string | null;
   sourceUrl: string;
+  sourceUrls: string[] | null;
   sourceType: string;
   operatorName: string | null;
+  operatorWebsite: string | null;
+  operatorEstablishedYear: number | null;
+  operatorCertifications: string[] | null;
+  otherAttributes: { label: string; value: string; category_hint?: string }[] | null;
   verified: boolean;
   dedupHash: string;
   qualityScore: number;
+  timeline: ActivityTimelineItem[];
   createdAt: string;
   updatedAt: string;
 }
@@ -109,7 +126,8 @@ export type ActivityViewMode = "grid" | "table";
 
 export interface ActivityReview {
   id: string;
-  activityId: string;
+  productType: string;
+  productId: string;
   reviewerName: string;
   reviewerAvatarUrl: string | null;
   rating: number | null;
@@ -124,7 +142,8 @@ export interface ActivityReview {
 }
 
 export interface ActivityReviewList {
-  activityId: string;
+  productId: string;
+  productType: string;
   total: number;
   avgRating: number | null;
   platformCounts: Record<string, number>;

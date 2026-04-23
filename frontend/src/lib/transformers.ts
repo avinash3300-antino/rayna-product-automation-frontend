@@ -10,12 +10,15 @@ import type {
   BackendActivityResponse,
   BackendReviewResponse,
   BackendReviewListResponse,
+  BackendCruiseCard,
+  BackendCruiseResponse,
 } from "@/types/api-responses";
-import type { Destination, DestinationStatus, IngestionRunStatus, ProductCategory } from "@/types/destinations";
+import type { Destination, DestinationStatus, ScrapeRunStatus, ProductCategory } from "@/types/destinations";
 import type { AppUser, UserRole, UserStatus } from "@/types/users";
 import type { DiscoveryRun, ScrapeSource } from "@/types/discovery";
 import type { ScrapeJob } from "@/types/scraping";
 import type { ActivityCardItem, Activity, ActivityStatus, ActivityReview, ActivityReviewList } from "@/types/activities";
+import type { CruiseCardItem, Cruise, CruiseStatus } from "@/types/cruises";
 import type { ProfileActivityEntry, ProfileActionType } from "@/types/profile";
 import type { PaginatedResponse } from "@/types/index";
 
@@ -68,7 +71,6 @@ function mapActionToActionType(action: string): ProfileActionType {
   return "edited";
 }
 
-/** Map raw backend action strings to human-readable descriptions */
 const ACTION_LABELS: Record<string, string> = {
   profile_picture_updated: "Updated profile picture",
   profile_picture_deleted: "Removed profile picture",
@@ -89,13 +91,11 @@ const ACTION_LABELS: Record<string, string> = {
 
 function humanizeAction(action: string): string {
   if (ACTION_LABELS[action]) return ACTION_LABELS[action];
-  // Fallback: replace underscores with spaces and capitalize each word
   return action
     .replace(/[_-]/g, " ")
     .replace(/\b\w/g, (c) => c.toUpperCase());
 }
 
-/** Map raw entity_type to a friendly label */
 const ENTITY_TYPE_LABELS: Record<string, string> = {
   auth_users: "User account",
   users: "User",
@@ -113,12 +113,10 @@ function humanizeEntity(entityType: string, entityId: string): string {
     ENTITY_TYPE_LABELS[entityType] ??
     entityType.replace(/[_-]/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
 
-  // Hide raw UUIDs for user-related entities
   if (entityType === "auth_users" || entityType === "users" || entityType === "sessions") {
     return label;
   }
 
-  // For other entities, show a shortened ID if it's a UUID
   const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-/.test(entityId);
   if (isUuid) {
     return `${label} (${entityId.slice(0, 8)})`;
@@ -129,28 +127,26 @@ function humanizeEntity(entityType: string, entityId: string): string {
 
 // ---- Destination transformer ----
 
-const VALID_INGESTION_STATUSES = new Set(["completed", "running", "failed", "queued"]);
+const VALID_SCRAPE_STATUSES = new Set(["completed", "running", "failed", "queued", "pending"]);
 
 export function transformDestinationResponse(
   raw: BackendDestinationListItem
 ): Destination {
   const productCounts = {
-    hotels: raw.product_counts?.hotels ?? 0,
-    attractions: raw.product_counts?.attractions ?? 0,
-    transfers: raw.product_counts?.transfers ?? 0,
-    restaurants: raw.product_counts?.restaurants ?? 0,
+    activities: raw.product_counts?.activities ?? 0,
+    cruises: raw.product_counts?.cruises ?? 0,
   } as Record<ProductCategory, number>;
 
-  let lastIngestionRun = null;
-  if (raw.last_ingestion_run) {
-    const status = VALID_INGESTION_STATUSES.has(raw.last_ingestion_run.status)
-      ? (raw.last_ingestion_run.status as IngestionRunStatus)
-      : ("queued" as IngestionRunStatus);
-    lastIngestionRun = {
-      date: raw.last_ingestion_run.date ?? new Date().toISOString(),
+  let lastScrapeRun = null;
+  if (raw.last_scrape_run) {
+    const status = VALID_SCRAPE_STATUSES.has(raw.last_scrape_run.status)
+      ? (raw.last_scrape_run.status as ScrapeRunStatus)
+      : ("pending" as ScrapeRunStatus);
+    lastScrapeRun = {
+      date: raw.last_scrape_run.date ?? new Date().toISOString(),
       status,
-      recordsProcessed: raw.last_ingestion_run.records_processed,
-      durationMs: raw.last_ingestion_run.duration_ms,
+      recordsFound: raw.last_scrape_run.records_found,
+      durationMs: raw.last_scrape_run.duration_ms,
     };
   }
 
@@ -168,12 +164,7 @@ export function transformDestinationResponse(
       ? raw.status
       : "active") as DestinationStatus,
     productCounts,
-    lastIngestionRun,
-    intelligenceFilter: {
-      lastRunDate: null,
-      keywordsFound: 0,
-      sourcesApproved: 0,
-    },
+    lastScrapeRun,
   };
 }
 
@@ -198,6 +189,7 @@ export function transformDiscoveryRunResponse(
     id: raw.id,
     cityId: raw.city_id,
     category: raw.category,
+    productType: raw.product_type ?? "activities",
     status: raw.status as DiscoveryRun["status"],
     ahrefsResults: raw.ahrefs_results,
     searchapiResults: raw.searchapi_results,
@@ -218,6 +210,7 @@ export function transformScrapeSourceResponse(
     id: raw.id,
     cityId: raw.city_id,
     category: raw.category,
+    productType: raw.product_type ?? "activities",
     sourceName: raw.source_name,
     sourceUrl: raw.source_url,
     tier: raw.tier,
@@ -241,6 +234,7 @@ export function transformScrapeJobResponse(
     discoveryRunId: raw.discovery_run_id,
     cityId: raw.city_id,
     category: raw.category,
+    productType: raw.product_type ?? "activities",
     status: raw.status as ScrapeJob["status"],
     sourceId: raw.source_id,
     sourceUrl: raw.source_url,
@@ -301,6 +295,7 @@ export function transformActivityResponse(
     excluded: raw.excluded,
     whatToBring: raw.what_to_bring,
     importantNotes: raw.important_notes,
+    redemptionInstructions: raw.redemption_instructions,
     priceAdult: raw.price_adult,
     priceChild: raw.price_child,
     priceInfant: raw.price_infant,
@@ -341,6 +336,7 @@ export function transformActivityResponse(
     difficulty: raw.difficulty,
     pregnancyRestriction: raw.pregnancy_restriction,
     wheelchairAccess: raw.wheelchair_access,
+    dressCodeNote: raw.dress_code_note,
     languages: raw.languages,
     coverImageUrl: raw.cover_image_url,
     galleryJson: raw.gallery_json,
@@ -350,6 +346,8 @@ export function transformActivityResponse(
     rating5: raw.rating_5,
     rating4: raw.rating_4,
     rating3: raw.rating_3,
+    rating2: raw.rating_2 ?? 0,
+    rating1: raw.rating_1 ?? 0,
     reviewSnippets: raw.review_snippets,
     metaTitle: raw.meta_title,
     metaDescription: raw.meta_description,
@@ -357,11 +355,22 @@ export function transformActivityResponse(
     jsonLd: raw.json_ld,
     canonicalUrl: raw.canonical_url,
     sourceUrl: raw.source_url,
+    sourceUrls: raw.source_urls ?? null,
     sourceType: raw.source_type,
     operatorName: raw.operator_name,
+    operatorWebsite: raw.operator_website,
+    operatorEstablishedYear: raw.operator_established_year,
+    operatorCertifications: raw.operator_certifications,
+    otherAttributes: raw.other_attributes,
     verified: raw.verified,
     dedupHash: raw.dedup_hash,
     qualityScore: raw.quality_score,
+    timeline: (raw.timeline ?? []).map((t) => ({
+      order: t.order,
+      timeLabel: t.time_label,
+      title: t.title,
+      description: t.description,
+    })),
     createdAt: raw.created_at,
     updatedAt: raw.updated_at,
   };
@@ -372,7 +381,8 @@ export function transformActivityResponse(
 export function transformReviewResponse(raw: BackendReviewResponse): ActivityReview {
   return {
     id: raw.id,
-    activityId: raw.activity_id,
+    productType: raw.product_type,
+    productId: raw.product_id,
     reviewerName: raw.reviewer_name,
     reviewerAvatarUrl: raw.reviewer_avatar_url,
     rating: raw.rating,
@@ -389,10 +399,171 @@ export function transformReviewResponse(raw: BackendReviewResponse): ActivityRev
 
 export function transformReviewListResponse(raw: BackendReviewListResponse): ActivityReviewList {
   return {
-    activityId: raw.activity_id,
+    productId: raw.product_id,
+    productType: raw.product_type,
     total: raw.total,
     avgRating: raw.avg_rating,
     platformCounts: raw.platform_counts,
     reviews: raw.reviews.map(transformReviewResponse),
+  };
+}
+
+// ---- Cruise transformers ----
+
+export function transformCruiseCardResponse(
+  raw: BackendCruiseCard
+): CruiseCardItem {
+  return {
+    id: raw.id,
+    name: raw.name,
+    slug: raw.slug,
+    category: raw.category,
+    subCategory: raw.sub_category,
+    city: raw.city,
+    priceFrom: raw.price_from,
+    currency: raw.currency,
+    rating: raw.rating,
+    reviewCount: raw.review_count,
+    coverImageUrl: raw.cover_image_url,
+    vesselType: raw.vessel_type,
+    cruiseType: raw.cruise_type,
+    durationHours: raw.duration_hours,
+    mealIncluded: raw.meal_included,
+    qualityScore: raw.quality_score,
+    status: raw.status as CruiseStatus,
+  };
+}
+
+export function transformCruiseResponse(
+  raw: BackendCruiseResponse
+): Cruise {
+  return {
+    id: raw.id,
+    name: raw.name,
+    slug: raw.slug,
+    cityId: raw.city_id,
+    category: raw.category,
+    subCategory: raw.sub_category,
+    cruiseClass: raw.cruise_class,
+    status: raw.status as CruiseStatus,
+    descriptionShort: raw.description_short,
+    descriptionLong: raw.description_long,
+    highlights: raw.highlights,
+    included: raw.included,
+    excluded: raw.excluded,
+    whatToBring: raw.what_to_bring,
+    importantNotes: raw.important_notes,
+    redemptionInstructions: raw.redemption_instructions,
+    priceAdult: raw.price_adult,
+    priceChild: raw.price_child,
+    priceInfant: raw.price_infant,
+    priceGroup: raw.price_group,
+    priceOriginal: raw.price_original,
+    currency: raw.currency,
+    priceType: raw.price_type,
+    discountPct: raw.discount_pct,
+    priceFrom: raw.price_from,
+    durationHours: raw.duration_hours,
+    durationDays: raw.duration_days,
+    departureTimes: raw.departure_times,
+    operatingDays: raw.operating_days,
+    seasonalAvailability: raw.seasonal_availability,
+    advanceBookingDays: raw.advance_booking_days,
+    instantConfirmation: raw.instant_confirmation,
+    freeCancellation: raw.free_cancellation,
+    cancellationHours: raw.cancellation_hours,
+    cancellationPolicy: raw.cancellation_policy,
+    boardingTime: raw.boarding_time,
+    country: raw.country,
+    city: raw.city,
+    area: raw.area,
+    address: raw.address,
+    lat: raw.lat,
+    lng: raw.lng,
+    mapsLink: raw.maps_link,
+    boardingPointName: raw.boarding_point_name,
+    boardingPointDescription: raw.boarding_point_description,
+    pickupAvailable: raw.pickup_available,
+    pickupPoints: raw.pickup_points,
+    vesselName: raw.vessel_name,
+    vesselType: raw.vessel_type,
+    vesselLengthM: raw.vessel_length_m,
+    vesselYearBuilt: raw.vessel_year_built,
+    vesselCapacity: raw.vessel_capacity,
+    deckCount: raw.deck_count,
+    onboardFacilities: raw.onboard_facilities,
+    cruiseType: raw.cruise_type,
+    routeDescription: raw.route_description,
+    numberOfNights: raw.number_of_nights,
+    mealIncluded: raw.meal_included,
+    mealType: raw.meal_type,
+    entertainmentIncluded: raw.entertainment_included,
+    entertainmentDetails: raw.entertainment_details,
+    wifiAvailable: raw.wifi_available,
+    minAge: raw.min_age,
+    maxAge: raw.max_age,
+    agePricingBreaks: raw.age_pricing_breaks,
+    dressCode: raw.dress_code,
+    wheelchairAccessible: raw.wheelchair_accessible,
+    languages: raw.languages,
+    fitnessLevel: raw.fitness_level,
+    pregnancyRestriction: raw.pregnancy_restriction,
+    operatorName: raw.operator_name,
+    operatorWebsite: raw.operator_website,
+    operatorLicenseBody: raw.operator_license_body,
+    operatorEstablishedYear: raw.operator_established_year,
+    operatorFleetSize: raw.operator_fleet_size,
+    operatorCertifications: raw.operator_certifications,
+    coverImageUrl: raw.cover_image_url,
+    galleryJson: raw.gallery_json,
+    videoUrl: raw.video_url,
+    rating: raw.rating,
+    reviewCount: raw.review_count,
+    rating5: raw.rating_5,
+    rating4: raw.rating_4,
+    rating3: raw.rating_3,
+    rating2: raw.rating_2 ?? 0,
+    rating1: raw.rating_1 ?? 0,
+    reviewSnippets: raw.review_snippets,
+    metaTitle: raw.meta_title,
+    metaDescription: raw.meta_description,
+    focusKeyword: raw.focus_keyword,
+    jsonLd: raw.json_ld,
+    canonicalUrl: raw.canonical_url,
+    sourceUrl: raw.source_url,
+    sourceUrls: raw.source_urls,
+    sourceType: raw.source_type,
+    verified: raw.verified,
+    qualityScore: raw.quality_score,
+    otherAttributes: raw.other_attributes,
+    dedupHash: raw.dedup_hash,
+    itinerary: (raw.itinerary ?? []).map((i) => ({
+      id: i.id,
+      order: i.order,
+      dayNumber: i.day_number,
+      timeLabel: i.time_label,
+      portOrStop: i.port_or_stop,
+      description: i.description,
+      shoreExcursionAvailable: i.shore_excursion_available,
+    })),
+    cabins: (raw.cabins ?? []).map((c) => ({
+      id: c.id,
+      cabinType: c.cabin_type,
+      cabinCount: c.cabin_count,
+      maxOccupancy: c.max_occupancy,
+      amenities: c.amenities,
+      description: c.description,
+    })),
+    pricingTiers: (raw.pricing_tiers ?? []).map((p) => ({
+      id: p.id,
+      cabinType: p.cabin_type,
+      priceAdult: p.price_adult,
+      priceChild: p.price_child,
+      priceInfant: p.price_infant,
+      currency: p.currency,
+      includesDescription: p.includes_description,
+    })),
+    createdAt: raw.created_at,
+    updatedAt: raw.updated_at,
   };
 }

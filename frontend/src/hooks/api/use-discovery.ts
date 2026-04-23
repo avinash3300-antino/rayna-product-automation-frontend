@@ -20,7 +20,7 @@ export function useTriggerDiscovery() {
   return useMutation<
     DiscoveryRun,
     Error,
-    { city_id: string; category: string }
+    { city_id: string; category: string; product_type?: string }
   >({
     mutationFn: async (body) => {
       const raw = await api.post<BackendSourceDiscoveryRunResponse>(

@@ -5,27 +5,7 @@ const nextConfig = {
     remotePatterns: [
       {
         protocol: "https",
-        hostname: "res.cloudinary.com",
-      },
-      {
-        protocol: "https",
-        hostname: "cdn.getyourguide.com",
-      },
-      {
-        protocol: "https",
-        hostname: "cdn-imgix.headout.com",
-      },
-      {
-        protocol: "https",
-        hostname: "**.viator.com",
-      },
-      {
-        protocol: "https",
-        hostname: "**.egypttoursportal.com",
-      },
-      {
-        protocol: "https",
-        hostname: "**.tacdn.com",
+        hostname: "**",
       },
     ],
   },
