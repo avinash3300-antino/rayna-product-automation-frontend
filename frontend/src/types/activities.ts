@@ -100,7 +100,7 @@ export interface Activity {
   rating3: number;
   rating2: number;
   rating1: number;
-  reviewSnippets: string[] | null;
+  reviewSnippets: (string | { text: string; author?: string; rating?: number })[] | null;
   metaTitle: string | null;
   metaDescription: string | null;
   focusKeyword: string | null;
