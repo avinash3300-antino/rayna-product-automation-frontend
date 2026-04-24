@@ -5,6 +5,7 @@ import {
   Star,
   MessageSquare,
   RefreshCw,
+  Sparkles,
   ExternalLink,
   User,
   ShieldCheck,
@@ -16,7 +17,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { cn } from "@/lib/utils";
-import { useActivityReviews, useScrapeReviews } from "@/hooks/api/use-reviews";
+import { useActivityReviews, useScrapeReviews, useEnrichReviews } from "@/hooks/api/use-reviews";
 import type { Activity, ActivityReview } from "@/types/activities";
 
 interface ActivityReviewsTabProps {
@@ -102,11 +103,28 @@ function ReviewCard({ review }: { review: ActivityReview }) {
         <p className="text-sm font-medium">{review.reviewTitle}</p>
       )}
 
-      <p className="text-sm text-muted-foreground leading-relaxed">
-        {isLong && !expanded
-          ? review.reviewText.slice(0, 250) + "..."
-          : review.reviewText}
-      </p>
+      {review.enrichedText ? (
+        <div className="grid grid-cols-2 gap-4">
+          <div>
+            <span className="text-xs font-medium text-muted-foreground mb-1 block">Original</span>
+            <p className="text-sm text-muted-foreground leading-relaxed bg-muted/30 p-3 rounded-md">
+              {isLong && !expanded ? review.reviewText.slice(0, 250) + "..." : review.reviewText}
+            </p>
+          </div>
+          <div>
+            <span className="text-xs font-medium text-emerald-600 mb-1 block">Enriched</span>
+            <p className="text-sm leading-relaxed bg-emerald-50 dark:bg-emerald-950/20 p-3 rounded-md">
+              {isLong && !expanded ? review.enrichedText.slice(0, 250) + "..." : review.enrichedText}
+            </p>
+          </div>
+        </div>
+      ) : (
+        <p className="text-sm text-muted-foreground leading-relaxed">
+          {isLong && !expanded
+            ? review.reviewText.slice(0, 250) + "..."
+            : review.reviewText}
+        </p>
+      )}
 
       {isLong && (
         <button
@@ -135,6 +153,7 @@ function ReviewCard({ review }: { review: ActivityReview }) {
 export function ActivityReviewsTab({ activity }: ActivityReviewsTabProps) {
   const { data: reviewData, isLoading } = useActivityReviews(activity.id);
   const scrapeReviews = useScrapeReviews();
+  const enrichReviews = useEnrichReviews();
   const [filter, setFilter] = useState<string>("all");
 
   const handleScrape = () => {
@@ -149,6 +168,17 @@ export function ActivityReviewsTab({ activity }: ActivityReviewsTabProps) {
         },
       }
     );
+  };
+
+  const handleEnrich = () => {
+    enrichReviews.mutate(activity.id, {
+      onSuccess: () => {
+        toast.success("Reviews enriched successfully");
+      },
+      onError: () => {
+        toast.error("Failed to enrich reviews");
+      },
+    });
   };
 
   const reviews = reviewData?.reviews ?? [];
@@ -179,20 +209,36 @@ export function ActivityReviewsTab({ activity }: ActivityReviewsTabProps) {
             {Object.keys(platformCounts).length !== 1 ? "s" : ""}
           </p>
         </div>
-        <Button
-          variant="outline"
-          size="sm"
-          className="gap-1.5"
-          onClick={handleScrape}
-          disabled={scrapeReviews.isPending}
-        >
-          {scrapeReviews.isPending ? (
-            <Loader2 className="h-3.5 w-3.5 animate-spin" />
-          ) : (
-            <RefreshCw className="h-3.5 w-3.5" />
-          )}
-          {scrapeReviews.isPending ? "Scraping..." : "Scrape Reviews"}
-        </Button>
+        <div className="flex items-center gap-2">
+          <Button
+            variant="outline"
+            size="sm"
+            className="gap-1.5"
+            onClick={handleScrape}
+            disabled={scrapeReviews.isPending}
+          >
+            {scrapeReviews.isPending ? (
+              <Loader2 className="h-3.5 w-3.5 animate-spin" />
+            ) : (
+              <RefreshCw className="h-3.5 w-3.5" />
+            )}
+            {scrapeReviews.isPending ? "Scraping..." : "Scrape Reviews"}
+          </Button>
+          <Button
+            variant="outline"
+            size="sm"
+            className="gap-1.5"
+            onClick={handleEnrich}
+            disabled={enrichReviews.isPending || total === 0}
+          >
+            {enrichReviews.isPending ? (
+              <Loader2 className="h-3.5 w-3.5 animate-spin" />
+            ) : (
+              <Sparkles className="h-3.5 w-3.5" />
+            )}
+            {enrichReviews.isPending ? "Enriching..." : "Enrich Reviews"}
+          </Button>
+        </div>
       </div>
 
       {isLoading ? (

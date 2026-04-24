@@ -161,6 +161,7 @@ export interface BackendReviewResponse {
   rating: number | null;
   review_title: string | null;
   review_text: string;
+  enriched_text: string | null;
   review_date: string | null;
   source_platform: string;
   source_url: string | null;
@@ -232,6 +233,9 @@ export interface BackendActivityResponse {
   price_type: string;
   discount_pct: number | null;
   price_from: number;
+  scraped_prices: unknown[] | null;
+  local_currency: string | null;
+  price_local: number | null;
   duration_minutes: number;
   start_times: string[] | null;
   operating_days: string[] | null;

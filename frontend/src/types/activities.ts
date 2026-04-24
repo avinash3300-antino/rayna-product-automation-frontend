@@ -57,6 +57,9 @@ export interface Activity {
   priceType: string;
   discountPct: number | null;
   priceFrom: number;
+  scrapedPrices: { source: string; url: string; localCurrency: string; localPrice: number; aedPrice: number; scrapedAt: string; prices?: { type: string; amount: number; currency: string }[]; originalPrice?: number | null; discountPct?: number | null }[] | null;
+  localCurrency: string | null;
+  priceLocal: number | null;
   durationMinutes: number;
   startTimes: string[] | null;
   operatingDays: string[] | null;
@@ -133,6 +136,7 @@ export interface ActivityReview {
   rating: number | null;
   reviewTitle: string | null;
   reviewText: string;
+  enrichedText: string | null;
   reviewDate: string | null;
   sourcePlatform: string;
   sourceUrl: string | null;

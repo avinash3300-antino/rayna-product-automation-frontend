@@ -13,6 +13,7 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import { ScrollArea } from "@/components/ui/scroll-area";
 import {
   formatDuration,
   formatPrice,
@@ -35,7 +36,7 @@ export function ActivityTable({ activities }: ActivityTableProps) {
   }
 
   return (
-    <div className="overflow-x-auto rounded-md border">
+    <ScrollArea className="h-[calc(100vh-320px)] rounded-md border">
       <Table>
         <TableHeader>
           <TableRow>
@@ -174,6 +175,6 @@ export function ActivityTable({ activities }: ActivityTableProps) {
           )}
         </TableBody>
       </Table>
-    </div>
+    </ScrollArea>
   );
 }

@@ -48,3 +48,19 @@ export function useScrapeReviews() {
     },
   });
 }
+
+export function useEnrichReviews() {
+  const api = useApiClient();
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (activityId: string) => {
+      return api.post(`/api/v1/activities/${activityId}/reviews/enrich`, {});
+    },
+    onSuccess: (_data, activityId) => {
+      queryClient.invalidateQueries({
+        queryKey: queryKeys.activities.reviews(activityId),
+      });
+    },
+  });
+}

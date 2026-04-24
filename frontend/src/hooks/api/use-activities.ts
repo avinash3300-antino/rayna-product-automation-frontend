@@ -161,3 +161,22 @@ export function useReEnrichActivity() {
     },
   });
 }
+
+export function useScrapePricing() {
+  const api = useApiClient();
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (activityId: string) => {
+      return api.post(`/api/v1/activities/${activityId}/scrape-pricing`, {});
+    },
+    onSuccess: (_data, activityId) => {
+      queryClient.invalidateQueries({
+        queryKey: queryKeys.activities.detail(activityId),
+      });
+      queryClient.invalidateQueries({
+        queryKey: queryKeys.activities.all,
+      });
+    },
+  });
+}

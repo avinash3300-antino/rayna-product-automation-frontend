@@ -1,7 +1,10 @@
 "use client";
 
-import { ImageIcon, Video, ExternalLink } from "lucide-react";
+import { useState, useEffect, useCallback } from "react";
+import { ImageIcon, Video, ExternalLink, ChevronLeft, ChevronRight, X } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Dialog, DialogContent } from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
 import type { Activity } from "@/types/activities";
 
 interface ActivityMediaTabProps {
@@ -9,6 +12,44 @@ interface ActivityMediaTabProps {
 }
 
 export function ActivityMediaTab({ activity }: ActivityMediaTabProps) {
+  const [lightboxIndex, setLightboxIndex] = useState<number | null>(null);
+
+  // Normalize gallery images to {url, alt} pairs
+  const galleryImages = (activity.galleryJson ?? [])
+    .map((item, idx) => {
+      const url = typeof item === "string" ? item : item?.url;
+      const alt =
+        typeof item === "string"
+          ? `${activity.name} gallery ${idx + 1}`
+          : item?.alt_text ?? `${activity.name} gallery ${idx + 1}`;
+      return url ? { url, alt } : null;
+    })
+    .filter(Boolean) as { url: string; alt: string }[];
+
+  const navigateLightbox = useCallback(
+    (direction: "prev" | "next") => {
+      if (lightboxIndex === null) return;
+      if (direction === "prev") {
+        setLightboxIndex(lightboxIndex > 0 ? lightboxIndex - 1 : galleryImages.length - 1);
+      } else {
+        setLightboxIndex(lightboxIndex < galleryImages.length - 1 ? lightboxIndex + 1 : 0);
+      }
+    },
+    [lightboxIndex, galleryImages.length]
+  );
+
+  // Keyboard navigation
+  useEffect(() => {
+    if (lightboxIndex === null) return;
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "ArrowLeft") navigateLightbox("prev");
+      else if (e.key === "ArrowRight") navigateLightbox("next");
+      else if (e.key === "Escape") setLightboxIndex(null);
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [lightboxIndex, navigateLightbox]);
+
   return (
     <div className="space-y-6">
       {/* Cover Image */}
@@ -47,24 +88,21 @@ export function ActivityMediaTab({ activity }: ActivityMediaTabProps) {
         <CardHeader>
           <CardTitle className="text-base flex items-center gap-2">
             <ImageIcon className="h-4 w-4" />
-            Gallery ({activity.galleryJson?.length ?? 0} images)
+            Gallery ({galleryImages.length} images)
           </CardTitle>
         </CardHeader>
         <CardContent>
-          {activity.galleryJson && activity.galleryJson.length > 0 ? (
+          {galleryImages.length > 0 ? (
             <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
-              {activity.galleryJson.map((item, idx) => {
-                const imgUrl = typeof item === "string" ? item : item?.url;
-                const altText = typeof item === "string" ? `${activity.name} gallery ${idx + 1}` : (item?.alt_text ?? `${activity.name} gallery ${idx + 1}`);
-                if (!imgUrl) return null;
-                return (
+              {galleryImages.map((img, idx) => (
                 <div
                   key={idx}
-                  className="relative aspect-video rounded-lg bg-muted overflow-hidden group"
+                  className="relative aspect-video rounded-lg bg-muted overflow-hidden group cursor-pointer"
+                  onClick={() => setLightboxIndex(idx)}
                 >
                   <img
-                    src={imgUrl}
-                    alt={altText}
+                    src={img.url}
+                    alt={img.alt}
                     className="w-full h-full object-cover transition-transform group-hover:scale-105"
                   />
                   <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors" />
@@ -72,8 +110,7 @@ export function ActivityMediaTab({ activity }: ActivityMediaTabProps) {
                     {idx + 1}
                   </span>
                 </div>
-                );
-              })}
+              ))}
             </div>
           ) : (
             <div className="flex flex-col items-center justify-center py-12 text-muted-foreground">
@@ -83,6 +120,64 @@ export function ActivityMediaTab({ activity }: ActivityMediaTabProps) {
           )}
         </CardContent>
       </Card>
+
+      {/* Lightbox Dialog */}
+      <Dialog
+        open={lightboxIndex !== null}
+        onOpenChange={(open) => !open && setLightboxIndex(null)}
+      >
+        <DialogContent className="max-w-[95vw] max-h-[95vh] p-0 border-none bg-black/95 [&>button]:hidden">
+          {lightboxIndex !== null && galleryImages[lightboxIndex] && (
+            <div className="relative flex items-center justify-center w-full h-[90vh]">
+              {/* Close button */}
+              <Button
+                variant="ghost"
+                size="icon"
+                className="absolute top-3 right-3 z-10 text-white hover:bg-white/20 h-9 w-9"
+                onClick={() => setLightboxIndex(null)}
+              >
+                <X className="h-5 w-5" />
+              </Button>
+
+              {/* Previous button */}
+              {galleryImages.length > 1 && (
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="absolute left-3 z-10 text-white hover:bg-white/20 h-10 w-10"
+                  onClick={() => navigateLightbox("prev")}
+                >
+                  <ChevronLeft className="h-6 w-6" />
+                </Button>
+              )}
+
+              {/* Image */}
+              <img
+                src={galleryImages[lightboxIndex].url}
+                alt={galleryImages[lightboxIndex].alt}
+                className="max-w-full max-h-[85vh] object-contain"
+              />
+
+              {/* Next button */}
+              {galleryImages.length > 1 && (
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="absolute right-3 z-10 text-white hover:bg-white/20 h-10 w-10"
+                  onClick={() => navigateLightbox("next")}
+                >
+                  <ChevronRight className="h-6 w-6" />
+                </Button>
+              )}
+
+              {/* Counter */}
+              <div className="absolute bottom-4 left-1/2 -translate-x-1/2 bg-black/60 text-white text-sm px-3 py-1 rounded-full">
+                {lightboxIndex + 1} / {galleryImages.length}
+              </div>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
 
       {/* Video */}
       <Card>

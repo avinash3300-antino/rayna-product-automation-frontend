@@ -13,6 +13,13 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { ActivityFilters, INITIAL_FILTERS } from "./activity-filters";
 import { ActivityGrid } from "./activity-grid";
 import { ActivityTable } from "./activity-table";
@@ -20,13 +27,14 @@ import { useActivities } from "@/hooks/api/use-activities";
 import type { ActivityFiltersState } from "./activity-filters";
 import type { ActivityViewMode } from "@/types/activities";
 
-const PAGE_SIZE = 12;
+const PAGE_SIZE_OPTIONS = [30, 40, 50] as const;
 
 export function ActivityBrowser() {
   const [viewMode, setViewMode] = useState<ActivityViewMode>("grid");
   const [search, setSearch] = useState("");
   const [debouncedSearch, setDebouncedSearch] = useState("");
   const [filters, setFilters] = useState<ActivityFiltersState>(INITIAL_FILTERS);
+  const [pageSize, setPageSize] = useState<number>(30);
   const [page, setPage] = useState(1);
 
   // Debounce search input (300ms)
@@ -57,7 +65,7 @@ export function ActivityBrowser() {
     free_cancellation: filters.freeCancellation ? true : undefined,
     instant_confirmation: filters.instantConfirmation ? true : undefined,
     page,
-    perPage: PAGE_SIZE,
+    perPage: pageSize,
   };
 
   const { data, isLoading, isError, error } = useActivities(queryParams);
@@ -78,8 +86,8 @@ export function ActivityBrowser() {
     []
   );
 
-  const startIdx = (page - 1) * PAGE_SIZE;
-  const endIdx = Math.min(startIdx + PAGE_SIZE, total);
+  const startIdx = (page - 1) * pageSize;
+  const endIdx = Math.min(startIdx + pageSize, total);
 
   return (
     <div className="space-y-6">
@@ -191,9 +199,29 @@ export function ActivityBrowser() {
       {/* Pagination */}
       {!isLoading && !isError && total > 0 && (
         <div className="flex items-center justify-between pt-2">
-          <p className="text-sm text-muted-foreground">
-            Showing {startIdx + 1}&ndash;{endIdx} of {total}
-          </p>
+          <div className="flex items-center gap-3">
+            <p className="text-sm text-muted-foreground">
+              Showing {startIdx + 1}&ndash;{endIdx} of {total}
+            </p>
+            <Select
+              value={String(pageSize)}
+              onValueChange={(v) => {
+                setPageSize(Number(v));
+                setPage(1);
+              }}
+            >
+              <SelectTrigger className="w-[100px] h-8 text-xs">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {PAGE_SIZE_OPTIONS.map((size) => (
+                  <SelectItem key={size} value={String(size)}>
+                    {size} / page
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
           <div className="flex items-center gap-2">
             <Button
               variant="outline"
