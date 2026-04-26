@@ -1,6 +1,6 @@
 "use client";
 
-import { Search, Link2, Code2, Tag } from "lucide-react";
+import { Search, Tag } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import type { Activity } from "@/types/activities";
 
@@ -67,48 +67,6 @@ export function ActivitySeoTab({ activity }: ActivitySeoTabProps) {
         </CardContent>
       </Card>
 
-      {/* Canonical URL */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-base flex items-center gap-2">
-            <Link2 className="h-4 w-4" />
-            Canonical URL
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          {activity.canonicalUrl ? (
-            <a
-              href={activity.canonicalUrl}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="text-sm text-blue-500 hover:text-blue-400 underline underline-offset-2 break-all"
-            >
-              {activity.canonicalUrl}
-            </a>
-          ) : (
-            <EmptyField />
-          )}
-        </CardContent>
-      </Card>
-
-      {/* JSON-LD */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-base flex items-center gap-2">
-            <Code2 className="h-4 w-4" />
-            JSON-LD Structured Data
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          {activity.jsonLd ? (
-            <pre className="text-xs bg-muted p-4 rounded-md overflow-x-auto font-mono max-h-96 overflow-y-auto">
-              {JSON.stringify(activity.jsonLd, null, 2)}
-            </pre>
-          ) : (
-            <EmptyField />
-          )}
-        </CardContent>
-      </Card>
     </div>
   );
 }

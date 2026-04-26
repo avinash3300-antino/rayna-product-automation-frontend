@@ -1,9 +1,6 @@
 import {
   LayoutDashboard,
   Globe,
-  Activity,
-  Filter,
-  LayoutGrid,
   SlidersHorizontal,
   Link,
   Tag,
@@ -46,19 +43,11 @@ export const navigation: NavSection[] = [
       { title: "Destinations", href: "/destinations", icon: Globe },
       { title: "Source Discovery", href: "/discovery", icon: Compass },
       { title: "Scraping Jobs", href: "/scraping", icon: Bot },
-      { title: "Ingestion Monitor", href: "/ingestion", icon: Activity },
-      {
-        title: "Review Queue",
-        href: "/review",
-        icon: Filter,
-        badge: 20,
-      },
     ],
   },
   {
     label: "CATALOG",
     items: [
-      { title: "Product Browser", href: "/products", icon: LayoutGrid },
       { title: "Activities", href: "/activities", icon: Ticket },
       { title: "Cruises", href: "/cruises", icon: Ship },
       {

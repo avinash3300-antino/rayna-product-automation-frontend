@@ -23,42 +23,35 @@ const STATUS_CONFIG: Record<
 > = {
   pending: {
     label: "Pending",
-    className:
-      "bg-gray-500/20 text-gray-400 border-gray-500/30",
+    className: "bg-muted text-muted-foreground",
   },
   scraping: {
     label: "Scraping",
-    className:
-      "bg-blue-500/20 text-blue-400 border-blue-500/30",
+    className: "bg-blue-500/10 text-blue-600 border-blue-500/20",
     spinning: true,
   },
   extracting: {
     label: "Extracting",
-    className:
-      "bg-amber-500/20 text-amber-400 border-amber-500/30",
+    className: "bg-amber-500/10 text-amber-600 border-amber-500/20",
     spinning: true,
   },
   saving: {
     label: "Saving",
-    className:
-      "bg-blue-500/20 text-blue-400 border-blue-500/30",
+    className: "bg-blue-500/10 text-blue-600 border-blue-500/20",
     spinning: true,
   },
   enriching: {
     label: "Enriching",
-    className:
-      "bg-purple-500/20 text-purple-400 border-purple-500/30",
+    className: "bg-purple-500/10 text-purple-600 border-purple-500/20",
     spinning: true,
   },
   completed: {
     label: "Completed",
-    className:
-      "bg-emerald-500/20 text-emerald-400 border-emerald-500/30",
+    className: "bg-emerald-500/10 text-emerald-600 border-emerald-500/20",
   },
   failed: {
     label: "Failed",
-    className:
-      "bg-red-500/20 text-red-400 border-red-500/30",
+    className: "bg-red-500/10 text-red-600 border-red-500/20",
   },
 };
 
@@ -82,7 +75,7 @@ export function ScrapeJobsTable({ jobs, onSelectJob }: ScrapeJobsTableProps) {
     <div className="overflow-x-auto">
       <Table>
         <TableHeader>
-          <TableRow className="border-border/50 hover:bg-transparent">
+          <TableRow className="hover:bg-transparent">
             <TableHead className="text-muted-foreground">Source URL</TableHead>
             <TableHead className="text-muted-foreground">Category</TableHead>
             <TableHead className="text-muted-foreground">Status</TableHead>
@@ -111,23 +104,23 @@ export function ScrapeJobsTable({ jobs, onSelectJob }: ScrapeJobsTableProps) {
             return (
               <TableRow
                 key={job.id}
-                className="border-border/50 hover:bg-navy-light/50 cursor-pointer"
+                className="cursor-pointer"
                 onClick={() => onSelectJob(job)}
               >
                 <TableCell className="max-w-[260px]">
                   <span
-                    className="text-sm text-gold font-mono truncate block"
+                    className="text-sm font-mono truncate block text-primary"
                     title={job.sourceUrl}
                   >
                     {truncateUrl(job.sourceUrl)}
                   </span>
                 </TableCell>
-                <TableCell className="text-sm text-foreground capitalize">
+                <TableCell className="text-sm capitalize">
                   {job.category}
                 </TableCell>
                 <TableCell>
                   <Badge
-                    variant="outline"
+                    variant="secondary"
                     className={`${statusCfg.className} ${
                       statusCfg.spinning
                         ? "flex items-center gap-1 w-fit"
@@ -143,13 +136,13 @@ export function ScrapeJobsTable({ jobs, onSelectJob }: ScrapeJobsTableProps) {
                 <TableCell className="text-sm text-muted-foreground capitalize">
                   {job.scrapeType}
                 </TableCell>
-                <TableCell className="text-sm text-foreground text-right tabular-nums">
+                <TableCell className="text-sm text-right tabular-nums">
                   {job.pagesScraped}
                 </TableCell>
-                <TableCell className="text-sm text-foreground text-right tabular-nums">
+                <TableCell className="text-sm text-right tabular-nums">
                   {job.recordsFound}
                 </TableCell>
-                <TableCell className="text-sm text-foreground text-right tabular-nums">
+                <TableCell className="text-sm text-right tabular-nums">
                   {job.recordsSaved}
                 </TableCell>
                 <TableCell className="text-sm text-muted-foreground text-right tabular-nums">

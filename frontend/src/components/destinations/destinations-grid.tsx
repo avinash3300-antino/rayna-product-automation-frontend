@@ -7,8 +7,7 @@ import { DestinationCard } from "./destination-card";
 import { AddDestinationDialog } from "./add-destination-dialog";
 import { EditDestinationDialog } from "./edit-destination-dialog";
 import { DeleteDestinationDialog } from "./delete-destination-dialog";
-import { IntelligenceSummarySheet } from "./intelligence-summary-sheet";
-import { MOCK_INTELLIGENCE_SUMMARIES, COUNTRY_OPTIONS } from "@/lib/mock-destinations-data";
+import { COUNTRY_OPTIONS } from "@/lib/mock-destinations-data";
 import {
   useDestinations,
   useCreateDestination,
@@ -27,7 +26,6 @@ export function DestinationsGrid() {
   const [addDialogOpen, setAddDialogOpen] = useState(false);
   const [editDialogOpen, setEditDialogOpen] = useState(false);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
-  const [intelligenceSheetOpen, setIntelligenceSheetOpen] = useState(false);
   const [selectedDestinationId, setSelectedDestinationId] = useState<
     string | null
   >(null);
@@ -58,16 +56,6 @@ export function DestinationsGrid() {
         },
       }
     );
-  }
-
-  function handleRunIngestion(id: string) {
-    // TODO: Integrate with ingestion API
-    console.log("Run ingestion:", id);
-  }
-
-  function handleViewIntelligence(id: string) {
-    setSelectedDestinationId(id);
-    setIntelligenceSheetOpen(true);
   }
 
   function handleEdit(id: string) {
@@ -123,9 +111,6 @@ export function DestinationsGrid() {
 
   const selectedDestination =
     destinations.find((d) => d.id === selectedDestinationId) ?? null;
-  const selectedSummary = selectedDestinationId
-    ? (MOCK_INTELLIGENCE_SUMMARIES[selectedDestinationId] ?? null)
-    : null;
 
   return (
     <div className="space-y-6">
@@ -182,8 +167,6 @@ export function DestinationsGrid() {
             <DestinationCard
               key={dest.id}
               destination={dest}
-              onRunIngestion={handleRunIngestion}
-              onViewIntelligence={handleViewIntelligence}
               onEdit={handleEdit}
               onDelete={handleDelete}
             />
@@ -216,13 +199,6 @@ export function DestinationsGrid() {
         isPending={deleteDestination.isPending}
       />
 
-      {/* Intelligence Summary Sheet */}
-      <IntelligenceSummarySheet
-        open={intelligenceSheetOpen}
-        onOpenChange={setIntelligenceSheetOpen}
-        destination={selectedDestination}
-        summary={selectedSummary}
-      />
     </div>
   );
 }

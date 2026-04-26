@@ -3,9 +3,7 @@
 import { Package, Activity, Filter, Pencil, Loader2 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { MOCK_KPI_STATS } from "@/lib/mock-dashboard-data";
-
-const stats = MOCK_KPI_STATS;
+import type { KpiStats } from "@/types/dashboard";
 
 interface StatCardProps {
   title: string;
@@ -33,35 +31,39 @@ function StatCard({ title, value, icon, accent, children }: StatCardProps) {
   );
 }
 
-export function StatCards() {
+interface StatCardsProps {
+  data: KpiStats;
+}
+
+export function StatCards({ data }: StatCardsProps) {
   return (
     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
       <StatCard
         title="Total Products"
-        value={stats.totalProducts}
+        value={data.total_products}
         icon={<Package className="h-4 w-4 text-muted-foreground" />}
         accent="bg-gold"
       >
         <div className="flex gap-1.5 flex-wrap">
           <Badge variant="outline" className="text-xs border-emerald-500/30 text-emerald-600">
-            {stats.productsByStatus.published} published
+            {data.by_status.published} published
           </Badge>
           <Badge variant="outline" className="text-xs border-amber-500/30 text-amber-600">
-            {stats.productsByStatus.staged} staged
+            {data.by_status.approved} approved
           </Badge>
           <Badge variant="outline" className="text-xs border-muted-foreground/30 text-muted-foreground">
-            {stats.productsByStatus.draft} draft
+            {data.by_status.draft} draft
           </Badge>
         </div>
       </StatCard>
 
       <StatCard
-        title="Active Ingestion Jobs"
-        value={stats.activeIngestionJobs}
+        title="Active Scrape Jobs"
+        value={data.active_scrape_jobs}
         icon={<Activity className="h-4 w-4 text-muted-foreground" />}
         accent="bg-chart-1"
       >
-        {stats.isIngestionRunning && (
+        {data.is_scraping_running && (
           <div className="flex items-center gap-1.5 text-sm text-muted-foreground">
             <Loader2 className="h-3.5 w-3.5 animate-spin text-chart-1" />
             <span>Processing…</span>
@@ -70,21 +72,21 @@ export function StatCards() {
       </StatCard>
 
       <StatCard
-        title="Queue A — Classification"
-        value={stats.queueACount}
+        title="Enriched — Pending Review"
+        value={data.by_status.enriched}
         icon={<Filter className="h-4 w-4 text-muted-foreground" />}
         accent="bg-chart-2"
       >
-        <p className="text-xs text-muted-foreground">Pending reviews</p>
+        <p className="text-xs text-muted-foreground">Ready for review</p>
       </StatCard>
 
       <StatCard
-        title="Queue B — Content"
-        value={stats.queueBCount}
+        title="Review Ready"
+        value={data.by_status.review_ready}
         icon={<Pencil className="h-4 w-4 text-muted-foreground" />}
         accent="bg-chart-4"
       >
-        <p className="text-xs text-muted-foreground">Pending reviews</p>
+        <p className="text-xs text-muted-foreground">Awaiting approval</p>
       </StatCard>
     </div>
   );

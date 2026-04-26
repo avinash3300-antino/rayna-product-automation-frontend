@@ -2,6 +2,9 @@ export const queryKeys = {
   auth: {
     me: ["auth", "me"] as const,
   },
+  dashboard: {
+    stats: ["dashboard", "stats"] as const,
+  },
   users: {
     all: ["users"] as const,
     list: (params: Record<string, unknown>) =>

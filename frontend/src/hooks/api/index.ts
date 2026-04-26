@@ -1,5 +1,6 @@
 export { useApiClient } from "./use-api-client";
 export { queryKeys } from "./query-keys";
+export { useDashboardStats } from "./use-dashboard";
 export {
   useUsers,
   useUser,

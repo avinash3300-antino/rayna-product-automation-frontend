@@ -166,11 +166,7 @@ export function transformDestinationResponse(
     productCounts,
     lastIngestionRun: null,
     lastScrapeRun,
-    intelligenceFilter: {
-      lastRunDate: null,
-      keywordsFound: 0,
-      sourcesApproved: 0,
-    },
+    intelligenceFilter: null,
     enabledCategories: raw.enabled_categories ?? [],
   };
 }
@@ -399,6 +395,7 @@ export function transformReviewResponse(raw: BackendReviewResponse): ActivityRev
     reviewTitle: raw.review_title,
     reviewText: raw.review_text,
     enrichedText: raw.enriched_text ?? null,
+    enrichedReviewerName: raw.enriched_reviewer_name ?? null,
     reviewDate: raw.review_date,
     sourcePlatform: raw.source_platform,
     sourceUrl: raw.source_url,

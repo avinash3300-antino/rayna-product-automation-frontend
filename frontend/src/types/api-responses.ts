@@ -162,6 +162,7 @@ export interface BackendReviewResponse {
   review_title: string | null;
   review_text: string;
   enriched_text: string | null;
+  enriched_reviewer_name: string | null;
   review_date: string | null;
   source_platform: string;
   source_url: string | null;

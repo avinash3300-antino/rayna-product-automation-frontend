@@ -31,35 +31,35 @@ const STATUS_CONFIG: Record<
 > = {
   pending: {
     label: "Pending",
-    className: "bg-gray-500/20 text-gray-400 border-gray-500/30",
+    className: "bg-muted text-muted-foreground",
   },
   scraping: {
     label: "Scraping",
-    className: "bg-blue-500/20 text-blue-400 border-blue-500/30",
+    className: "bg-blue-500/10 text-blue-600 border-blue-500/20",
     spinning: true,
   },
   extracting: {
     label: "Extracting",
-    className: "bg-amber-500/20 text-amber-400 border-amber-500/30",
+    className: "bg-amber-500/10 text-amber-600 border-amber-500/20",
     spinning: true,
   },
   saving: {
     label: "Saving",
-    className: "bg-blue-500/20 text-blue-400 border-blue-500/30",
+    className: "bg-blue-500/10 text-blue-600 border-blue-500/20",
     spinning: true,
   },
   enriching: {
     label: "Enriching",
-    className: "bg-purple-500/20 text-purple-400 border-purple-500/30",
+    className: "bg-purple-500/10 text-purple-600 border-purple-500/20",
     spinning: true,
   },
   completed: {
     label: "Completed",
-    className: "bg-emerald-500/20 text-emerald-400 border-emerald-500/30",
+    className: "bg-emerald-500/10 text-emerald-600 border-emerald-500/20",
   },
   failed: {
     label: "Failed",
-    className: "bg-red-500/20 text-red-400 border-red-500/30",
+    className: "bg-red-500/10 text-red-600 border-red-500/20",
   },
 };
 
@@ -112,7 +112,7 @@ export function ScrapeJobDetail({ jobId }: ScrapeJobDetailProps) {
           </Button>
         </Link>
         <div className="flex items-center justify-center py-20">
-          <Loader2 className="h-6 w-6 animate-spin text-gold" />
+          <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
           <span className="ml-3 text-sm text-muted-foreground">
             Loading job details...
           </span>
@@ -133,9 +133,9 @@ export function ScrapeJobDetail({ jobId }: ScrapeJobDetailProps) {
             Back to Scraping Jobs
           </Button>
         </Link>
-        <Card className="border-border/50 bg-navy-light/30 p-8 text-center">
-          <AlertTriangle className="h-8 w-8 text-amber-400 mx-auto mb-3" />
-          <h2 className="text-lg font-semibold text-foreground">
+        <Card className="p-8 text-center">
+          <AlertTriangle className="h-8 w-8 text-amber-600 mx-auto mb-3" />
+          <h2 className="text-lg font-semibold">
             Job Not Found
           </h2>
           <p className="text-sm text-muted-foreground mt-1">
@@ -164,7 +164,7 @@ export function ScrapeJobDetail({ jobId }: ScrapeJobDetailProps) {
           Scraping Jobs
         </Link>
         <span className="text-muted-foreground">/</span>
-        <span className="text-foreground font-medium">
+        <span className="font-medium">
           Job {job.id.slice(0, 8)}...
         </span>
       </div>
@@ -182,11 +182,11 @@ export function ScrapeJobDetail({ jobId }: ScrapeJobDetailProps) {
                 <ArrowLeft className="h-5 w-5" />
               </Button>
             </Link>
-            <h1 className="text-xl font-bold text-foreground">
+            <h1 className="text-xl font-bold">
               Scrape Job Detail
             </h1>
             <Badge
-              variant="outline"
+              variant="secondary"
               className={`${statusCfg.className} ${
                 statusCfg.spinning ? "flex items-center gap-1" : ""
               }`}
@@ -210,7 +210,7 @@ export function ScrapeJobDetail({ jobId }: ScrapeJobDetailProps) {
               href={job.sourceUrl}
               target="_blank"
               rel="noopener noreferrer"
-              className="text-sm text-gold hover:text-gold/80 font-mono flex items-center gap-1 max-w-[500px] truncate"
+              className="text-sm text-primary hover:underline font-mono flex items-center gap-1 max-w-[500px] truncate"
             >
               {job.sourceUrl}
               <ExternalLink className="h-3 w-3 flex-shrink-0" />
@@ -237,13 +237,13 @@ export function ScrapeJobDetail({ jobId }: ScrapeJobDetailProps) {
 
       {/* Stats Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
-        <Card className="border-border/50 bg-navy-light/30 p-4">
+        <Card className="p-4">
           <div className="flex items-center gap-3">
-            <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-gold/20">
-              <FileText className="h-5 w-5 text-gold" />
+            <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-muted">
+              <FileText className="h-5 w-5 text-muted-foreground" />
             </div>
             <div>
-              <p className="text-2xl font-bold text-foreground">
+              <p className="text-2xl font-bold">
                 {job.pagesScraped}
               </p>
               <p className="text-sm text-muted-foreground">Pages Scraped</p>
@@ -251,13 +251,13 @@ export function ScrapeJobDetail({ jobId }: ScrapeJobDetailProps) {
           </div>
         </Card>
 
-        <Card className="border-blue-500/20 bg-blue-500/5 p-4">
+        <Card className="p-4">
           <div className="flex items-center gap-3">
-            <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-blue-500/20">
-              <Database className="h-5 w-5 text-blue-400" />
+            <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-blue-500/10">
+              <Database className="h-5 w-5 text-blue-600" />
             </div>
             <div>
-              <p className="text-2xl font-bold text-blue-400">
+              <p className="text-2xl font-bold">
                 {job.recordsFound}
               </p>
               <p className="text-sm text-muted-foreground">Records Found</p>
@@ -265,13 +265,13 @@ export function ScrapeJobDetail({ jobId }: ScrapeJobDetailProps) {
           </div>
         </Card>
 
-        <Card className="border-emerald-500/20 bg-emerald-500/5 p-4">
+        <Card className="p-4">
           <div className="flex items-center gap-3">
-            <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-emerald-500/20">
-              <Database className="h-5 w-5 text-emerald-400" />
+            <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-emerald-500/10">
+              <Database className="h-5 w-5 text-emerald-600" />
             </div>
             <div>
-              <p className="text-2xl font-bold text-emerald-400">
+              <p className="text-2xl font-bold">
                 {job.recordsSaved}
               </p>
               <p className="text-sm text-muted-foreground">Records Saved</p>
@@ -279,13 +279,13 @@ export function ScrapeJobDetail({ jobId }: ScrapeJobDetailProps) {
           </div>
         </Card>
 
-        <Card className="border-border/50 bg-navy-light/30 p-4">
+        <Card className="p-4">
           <div className="flex items-center gap-3">
-            <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-gray-500/20">
-              <SkipForward className="h-5 w-5 text-gray-400" />
+            <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-muted">
+              <SkipForward className="h-5 w-5 text-muted-foreground" />
             </div>
             <div>
-              <p className="text-2xl font-bold text-foreground">
+              <p className="text-2xl font-bold">
                 {job.recordsSkippedDup}
               </p>
               <p className="text-sm text-muted-foreground">Skipped Dup</p>
@@ -293,13 +293,13 @@ export function ScrapeJobDetail({ jobId }: ScrapeJobDetailProps) {
           </div>
         </Card>
 
-        <Card className="border-purple-500/20 bg-purple-500/5 p-4">
+        <Card className="p-4">
           <div className="flex items-center gap-3">
-            <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-purple-500/20">
-              <Sparkles className="h-5 w-5 text-purple-400" />
+            <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-purple-500/10">
+              <Sparkles className="h-5 w-5 text-purple-600" />
             </div>
             <div>
-              <p className="text-2xl font-bold text-purple-400">
+              <p className="text-2xl font-bold">
                 {job.recordsEnriched}
               </p>
               <p className="text-sm text-muted-foreground">Records Enriched</p>
@@ -309,9 +309,9 @@ export function ScrapeJobDetail({ jobId }: ScrapeJobDetailProps) {
       </div>
 
       {/* Timing Details */}
-      <Card className="border-border/50 bg-navy-light/30 p-5">
-        <h3 className="font-semibold text-foreground mb-4 flex items-center gap-2">
-          <Clock className="h-4 w-4 text-gold" />
+      <Card className="p-5">
+        <h3 className="font-semibold mb-4 flex items-center gap-2">
+          <Clock className="h-4 w-4 text-muted-foreground" />
           Timing
         </h3>
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
@@ -319,13 +319,13 @@ export function ScrapeJobDetail({ jobId }: ScrapeJobDetailProps) {
             <p className="text-xs text-muted-foreground uppercase tracking-wider mb-1">
               Started At
             </p>
-            <p className="text-sm text-foreground">{formatDate(job.startedAt)}</p>
+            <p className="text-sm">{formatDate(job.startedAt)}</p>
           </div>
           <div>
             <p className="text-xs text-muted-foreground uppercase tracking-wider mb-1">
               Completed At
             </p>
-            <p className="text-sm text-foreground">
+            <p className="text-sm">
               {formatDate(job.completedAt)}
             </p>
           </div>
@@ -333,7 +333,7 @@ export function ScrapeJobDetail({ jobId }: ScrapeJobDetailProps) {
             <p className="text-xs text-muted-foreground uppercase tracking-wider mb-1">
               Duration
             </p>
-            <p className="text-sm text-foreground">
+            <p className="text-sm">
               {computeDuration(job.startedAt, job.completedAt)}
               {isRunning && (
                 <span className="ml-1 text-xs text-muted-foreground">
@@ -347,14 +347,14 @@ export function ScrapeJobDetail({ jobId }: ScrapeJobDetailProps) {
 
       {/* Error Details (collapsible) */}
       {job.errorsJson && Object.keys(job.errorsJson).length > 0 && (
-        <Card className="border-red-500/20 bg-red-500/5 overflow-hidden">
+        <Card className="border-red-500/20 overflow-hidden">
           <button
             onClick={() => setErrorsExpanded(!errorsExpanded)}
-            className="w-full flex items-center justify-between p-4 text-left hover:bg-red-500/10 transition-colors"
+            className="w-full flex items-center justify-between p-4 text-left hover:bg-muted/50 transition-colors"
           >
             <div className="flex items-center gap-2">
-              <AlertTriangle className="h-5 w-5 text-red-400" />
-              <h3 className="font-semibold text-foreground">Error Details</h3>
+              <AlertTriangle className="h-5 w-5 text-red-600" />
+              <h3 className="font-semibold">Error Details</h3>
               <span className="text-xs text-muted-foreground">
                 ({Object.keys(job.errorsJson).length} error
                 {Object.keys(job.errorsJson).length > 1 ? "s" : ""})
@@ -368,8 +368,8 @@ export function ScrapeJobDetail({ jobId }: ScrapeJobDetailProps) {
           </button>
 
           {errorsExpanded && (
-            <div className="border-t border-red-500/20 p-4">
-              <pre className="text-xs text-red-300 bg-navy/50 rounded-lg p-4 overflow-x-auto max-h-[400px] overflow-y-auto">
+            <div className="border-t p-4">
+              <pre className="text-xs text-red-600 bg-muted rounded-lg p-4 overflow-x-auto max-h-[400px] overflow-y-auto">
                 {JSON.stringify(job.errorsJson, null, 2)}
               </pre>
             </div>

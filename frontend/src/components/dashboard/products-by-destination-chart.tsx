@@ -10,7 +10,7 @@ import {
   ResponsiveContainer,
 } from "recharts";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { MOCK_PRODUCTS_BY_DESTINATION } from "@/lib/mock-dashboard-data";
+import type { ProductsByDestination } from "@/types/dashboard";
 
 function CustomTooltip({
   active,
@@ -32,7 +32,11 @@ function CustomTooltip({
   );
 }
 
-export function ProductsByDestinationChart() {
+interface ProductsByDestinationChartProps {
+  data: ProductsByDestination[];
+}
+
+export function ProductsByDestinationChart({ data }: ProductsByDestinationChartProps) {
   return (
     <Card>
       <CardHeader className="pb-3">
@@ -41,36 +45,42 @@ export function ProductsByDestinationChart() {
         </CardTitle>
       </CardHeader>
       <CardContent>
-        <ResponsiveContainer width="100%" height={300}>
-          <BarChart
-            data={MOCK_PRODUCTS_BY_DESTINATION}
-            margin={{ top: 4, right: 4, left: -12, bottom: 0 }}
-          >
-            <CartesianGrid
-              strokeDasharray="3 3"
-              stroke="hsl(var(--border))"
-              vertical={false}
-            />
-            <XAxis
-              dataKey="destination"
-              tick={{ fontSize: 12 }}
-              tickLine={false}
-              axisLine={false}
-            />
-            <YAxis
-              tick={{ fontSize: 12 }}
-              tickLine={false}
-              axisLine={false}
-              tickFormatter={(v: number) => v.toLocaleString()}
-            />
-            <RechartsTooltip content={<CustomTooltip />} />
-            <Bar
-              dataKey="count"
-              fill="hsl(var(--chart-1))"
-              radius={[4, 4, 0, 0]}
-            />
-          </BarChart>
-        </ResponsiveContainer>
+        {data.length === 0 ? (
+          <div className="flex items-center justify-center h-[300px] text-muted-foreground">
+            No product data yet
+          </div>
+        ) : (
+          <ResponsiveContainer width="100%" height={300}>
+            <BarChart
+              data={data}
+              margin={{ top: 4, right: 4, left: -12, bottom: 0 }}
+            >
+              <CartesianGrid
+                strokeDasharray="3 3"
+                stroke="hsl(var(--border))"
+                vertical={false}
+              />
+              <XAxis
+                dataKey="destination"
+                tick={{ fontSize: 12 }}
+                tickLine={false}
+                axisLine={false}
+              />
+              <YAxis
+                tick={{ fontSize: 12 }}
+                tickLine={false}
+                axisLine={false}
+                tickFormatter={(v: number) => v.toLocaleString()}
+              />
+              <RechartsTooltip content={<CustomTooltip />} />
+              <Bar
+                dataKey="count"
+                fill="hsl(var(--chart-1))"
+                radius={[4, 4, 0, 0]}
+              />
+            </BarChart>
+          </ResponsiveContainer>
+        )}
       </CardContent>
     </Card>
   );

@@ -145,25 +145,20 @@ export function ScrapingDashboard() {
     <div className="space-y-6">
       {/* Header */}
       <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
-        <div className="flex items-center gap-3">
-          <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-gold/20">
-            <Search className="h-5 w-5 text-gold" />
-          </div>
-          <div>
-            <h1 className="text-xl font-bold text-foreground">Scraping Jobs</h1>
-            <p className="text-sm text-muted-foreground">
-              Monitor and manage all web scraping jobs
-            </p>
-          </div>
+        <div>
+          <h2 className="text-2xl font-bold tracking-tight">Scraping Jobs</h2>
+          <p className="text-muted-foreground">
+            Monitor and manage all web scraping jobs
+          </p>
         </div>
 
         {/* Filters */}
         <div className="flex flex-wrap items-center gap-3">
           <Select value={cityFilter} onValueChange={handleCityChange}>
-            <SelectTrigger className="w-[180px] bg-navy-light/50 border-border/50">
+            <SelectTrigger className="w-[180px]">
               <SelectValue placeholder="All Cities" />
             </SelectTrigger>
-            <SelectContent className="bg-navy border-border/50">
+            <SelectContent>
               <SelectItem value="all">All Cities</SelectItem>
               {destinations.map((dest) => (
                 <SelectItem key={dest.id} value={dest.id}>
@@ -174,10 +169,10 @@ export function ScrapingDashboard() {
           </Select>
 
           <Select value={categoryFilter} onValueChange={handleCategoryChange}>
-            <SelectTrigger className="w-[160px] bg-navy-light/50 border-border/50">
+            <SelectTrigger className="w-[160px]">
               <SelectValue />
             </SelectTrigger>
-            <SelectContent className="bg-navy border-border/50">
+            <SelectContent>
               {CATEGORY_OPTIONS.map((opt) => (
                 <SelectItem key={opt.value} value={opt.value}>
                   {opt.label}
@@ -187,10 +182,10 @@ export function ScrapingDashboard() {
           </Select>
 
           <Select value={statusFilter} onValueChange={handleStatusChange}>
-            <SelectTrigger className="w-[160px] bg-navy-light/50 border-border/50">
+            <SelectTrigger className="w-[160px]">
               <SelectValue />
             </SelectTrigger>
-            <SelectContent className="bg-navy border-border/50">
+            <SelectContent>
               {STATUS_OPTIONS.map((opt) => (
                 <SelectItem key={opt.value} value={opt.value}>
                   {opt.label}
@@ -200,10 +195,10 @@ export function ScrapingDashboard() {
           </Select>
 
           <Select value={productTypeFilter} onValueChange={handleProductTypeChange}>
-            <SelectTrigger className="w-[150px] bg-navy-light/50 border-border/50">
+            <SelectTrigger className="w-[150px]">
               <SelectValue />
             </SelectTrigger>
-            <SelectContent className="bg-navy border-border/50">
+            <SelectContent>
               {PRODUCT_TYPE_OPTIONS.map((opt) => (
                 <SelectItem key={opt.value} value={opt.value}>
                   {opt.label}
@@ -216,37 +211,37 @@ export function ScrapingDashboard() {
 
       {/* Stats Summary */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        <Card className="border-border/50 bg-navy-light/30 p-4">
+        <Card className="p-4">
           <div className="flex items-center gap-3">
-            <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-gold/20">
-              <Activity className="h-5 w-5 text-gold" />
+            <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-muted">
+              <Activity className="h-5 w-5 text-foreground" />
             </div>
             <div>
-              <p className="text-2xl font-bold text-foreground">{stats.total}</p>
+              <p className="text-2xl font-bold">{stats.total}</p>
               <p className="text-sm text-muted-foreground">Total Jobs</p>
             </div>
           </div>
         </Card>
 
-        <Card className="border-blue-500/20 bg-blue-500/5 p-4">
+        <Card className="p-4">
           <div className="flex items-center gap-3">
-            <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-blue-500/20">
-              <Loader2 className="h-5 w-5 text-blue-400 animate-spin" />
+            <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-blue-500/10">
+              <Loader2 className="h-5 w-5 text-blue-600 animate-spin" />
             </div>
             <div>
-              <p className="text-2xl font-bold text-blue-400">{stats.running}</p>
+              <p className="text-2xl font-bold">{stats.running}</p>
               <p className="text-sm text-muted-foreground">Running</p>
             </div>
           </div>
         </Card>
 
-        <Card className="border-emerald-500/20 bg-emerald-500/5 p-4">
+        <Card className="p-4">
           <div className="flex items-center gap-3">
-            <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-emerald-500/20">
-              <CheckCircle className="h-5 w-5 text-emerald-400" />
+            <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-emerald-500/10">
+              <CheckCircle className="h-5 w-5 text-emerald-600" />
             </div>
             <div>
-              <p className="text-2xl font-bold text-emerald-400">
+              <p className="text-2xl font-bold">
                 {stats.completed}
               </p>
               <p className="text-sm text-muted-foreground">Completed</p>
@@ -254,31 +249,19 @@ export function ScrapingDashboard() {
           </div>
         </Card>
 
-        <Card
-          className={`p-4 ${
-            stats.failed > 0
-              ? "border-red-500/20 bg-red-500/5"
-              : "border-border/50 bg-navy-light/30"
-          }`}
-        >
+        <Card className="p-4">
           <div className="flex items-center gap-3">
-            <div
-              className={`flex h-10 w-10 items-center justify-center rounded-lg ${
-                stats.failed > 0 ? "bg-red-500/20" : "bg-gray-500/20"
-              }`}
-            >
-              <AlertTriangle
-                className={`h-5 w-5 ${
-                  stats.failed > 0 ? "text-red-400" : "text-gray-400"
-                }`}
-              />
+            <div className={`flex h-10 w-10 items-center justify-center rounded-lg ${
+              stats.failed > 0 ? "bg-red-500/10" : "bg-muted"
+            }`}>
+              <AlertTriangle className={`h-5 w-5 ${
+                stats.failed > 0 ? "text-red-600" : "text-muted-foreground"
+              }`} />
             </div>
             <div>
-              <p
-                className={`text-2xl font-bold ${
-                  stats.failed > 0 ? "text-red-400" : "text-foreground"
-                }`}
-              >
+              <p className={`text-2xl font-bold ${
+                stats.failed > 0 ? "text-red-600" : ""
+              }`}>
                 {stats.failed}
               </p>
               <p className="text-sm text-muted-foreground">Failed</p>
@@ -288,9 +271,9 @@ export function ScrapingDashboard() {
       </div>
 
       {/* Jobs Table */}
-      <Card className="border-border/50 bg-navy-light/30 overflow-hidden">
-        <div className="p-4 border-b border-border/50">
-          <h3 className="font-semibold text-foreground">Scrape Jobs</h3>
+      <Card className="overflow-hidden">
+        <div className="p-4 border-b">
+          <h3 className="font-semibold">Scrape Jobs</h3>
           <p className="text-sm text-muted-foreground mt-0.5">
             {totalJobs} jobs found
           </p>
@@ -298,14 +281,14 @@ export function ScrapingDashboard() {
 
         {isLoading ? (
           <div className="flex items-center justify-center py-16">
-            <Loader2 className="h-6 w-6 animate-spin text-gold" />
+            <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
             <span className="ml-3 text-sm text-muted-foreground">
               Loading scrape jobs...
             </span>
           </div>
         ) : isError ? (
           <div className="flex flex-col items-center justify-center py-16">
-            <AlertTriangle className="h-8 w-8 text-red-400 mb-3" />
+            <AlertTriangle className="h-8 w-8 text-red-600 mb-3" />
             <p className="text-sm text-muted-foreground">
               Failed to load scrape jobs. Please try again.
             </p>
@@ -323,7 +306,7 @@ export function ScrapingDashboard() {
 
             {/* Pagination */}
             {totalJobs > PAGE_SIZE && (
-              <div className="flex items-center justify-between p-4 border-t border-border/50">
+              <div className="flex items-center justify-between p-4 border-t">
                 <p className="text-sm text-muted-foreground">
                   Showing {startIdx + 1}&ndash;{endIdx} of {totalJobs}
                 </p>
@@ -333,7 +316,6 @@ export function ScrapingDashboard() {
                     size="sm"
                     disabled={currentPage === 1}
                     onClick={() => setCurrentPage((p) => p - 1)}
-                    className="border-border/50"
                   >
                     <ChevronLeft className="h-4 w-4 mr-1" />
                     Prev
@@ -346,7 +328,6 @@ export function ScrapingDashboard() {
                     size="sm"
                     disabled={currentPage === totalPages}
                     onClick={() => setCurrentPage((p) => p + 1)}
-                    className="border-border/50"
                   >
                     Next
                     <ChevronRight className="h-4 w-4 ml-1" />

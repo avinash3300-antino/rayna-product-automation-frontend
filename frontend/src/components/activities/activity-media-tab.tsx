@@ -1,9 +1,10 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
-import { ImageIcon, Video, ExternalLink, ChevronLeft, ChevronRight, X } from "lucide-react";
+import { ImageIcon, ChevronLeft, ChevronRight, X } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Dialog, DialogContent } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
+import { VisuallyHidden } from "@radix-ui/react-visually-hidden";
 import { Button } from "@/components/ui/button";
 import type { Activity } from "@/types/activities";
 
@@ -70,9 +71,6 @@ export function ActivityMediaTab({ activity }: ActivityMediaTabProps) {
                   className="w-full h-full object-cover"
                 />
               </div>
-              <p className="text-xs text-muted-foreground mt-2 break-all">
-                {activity.coverImageUrl}
-              </p>
             </div>
           ) : (
             <div className="flex flex-col items-center justify-center py-12 text-muted-foreground">
@@ -127,6 +125,7 @@ export function ActivityMediaTab({ activity }: ActivityMediaTabProps) {
         onOpenChange={(open) => !open && setLightboxIndex(null)}
       >
         <DialogContent className="max-w-[95vw] max-h-[95vh] p-0 border-none bg-black/95 [&>button]:hidden">
+          <VisuallyHidden><DialogTitle>Image lightbox</DialogTitle></VisuallyHidden>
           {lightboxIndex !== null && galleryImages[lightboxIndex] && (
             <div className="relative flex items-center justify-center w-full h-[90vh]">
               {/* Close button */}
@@ -179,36 +178,6 @@ export function ActivityMediaTab({ activity }: ActivityMediaTabProps) {
         </DialogContent>
       </Dialog>
 
-      {/* Video */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-base flex items-center gap-2">
-            <Video className="h-4 w-4" />
-            Video
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          {activity.videoUrl ? (
-            <div className="flex items-center gap-2 p-3 rounded-md border text-sm">
-              <Video className="h-4 w-4 text-muted-foreground shrink-0" />
-              <span className="truncate flex-1">{activity.videoUrl}</span>
-              <a
-                href={activity.videoUrl}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-muted-foreground hover:text-foreground shrink-0"
-              >
-                <ExternalLink className="h-3.5 w-3.5" />
-              </a>
-            </div>
-          ) : (
-            <div className="flex flex-col items-center justify-center py-12 text-muted-foreground">
-              <Video className="h-10 w-10 mb-2" />
-              <p className="text-sm">No video linked</p>
-            </div>
-          )}
-        </CardContent>
-      </Card>
     </div>
   );
 }

@@ -1,21 +1,12 @@
 "use client";
 
-import { useState } from "react";
 import {
   DollarSign,
-  Users,
-  Calendar,
   ShieldCheck,
   BadgePercent,
-  RefreshCw,
-  ExternalLink,
-  Loader2,
 } from "lucide-react";
-import { toast } from "sonner";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { useScrapePricing } from "@/hooks/api/use-activities";
 import type { Activity } from "@/types/activities";
 
 interface ActivityPricingTabProps {
@@ -66,20 +57,22 @@ function DualPrice({
   );
 }
 
+function convertToLocal(
+  aedAmount: number | null,
+  activity: Activity
+): number | null {
+  if (
+    aedAmount == null ||
+    !activity.priceAdult ||
+    !activity.priceLocal ||
+    !activity.localCurrency
+  )
+    return null;
+  const rate = activity.priceLocal / activity.priceAdult;
+  return Math.round(aedAmount * rate * 100) / 100;
+}
+
 export function ActivityPricingTab({ activity }: ActivityPricingTabProps) {
-  const scrapePricing = useScrapePricing();
-
-  const handleScrape = () => {
-    scrapePricing.mutate(activity.id, {
-      onSuccess: () => {
-        toast.success("Pricing scraped successfully");
-      },
-      onError: () => {
-        toast.error("Failed to scrape pricing");
-      },
-    });
-  };
-
   return (
     <div className="space-y-6">
       {/* Price Breakdown */}
@@ -104,19 +97,47 @@ export function ActivityPricingTab({ activity }: ActivityPricingTabProps) {
           />
           <FieldRow
             label="Price (Child)"
-            value={formatPrice(activity.priceChild, activity.currency)}
+            value={
+              <DualPrice
+                amount={activity.priceChild}
+                currency={activity.currency}
+                localAmount={convertToLocal(activity.priceChild, activity)}
+                localCurrency={activity.localCurrency}
+              />
+            }
           />
           <FieldRow
             label="Price (Infant)"
-            value={formatPrice(activity.priceInfant, activity.currency)}
+            value={
+              <DualPrice
+                amount={activity.priceInfant}
+                currency={activity.currency}
+                localAmount={convertToLocal(activity.priceInfant, activity)}
+                localCurrency={activity.localCurrency}
+              />
+            }
           />
           <FieldRow
             label="Price (Group)"
-            value={formatPrice(activity.priceGroup, activity.currency)}
+            value={
+              <DualPrice
+                amount={activity.priceGroup}
+                currency={activity.currency}
+                localAmount={convertToLocal(activity.priceGroup, activity)}
+                localCurrency={activity.localCurrency}
+              />
+            }
           />
           <FieldRow
             label="Original Price"
-            value={formatPrice(activity.priceOriginal, activity.currency)}
+            value={
+              <DualPrice
+                amount={activity.priceOriginal}
+                currency={activity.currency}
+                localAmount={convertToLocal(activity.priceOriginal, activity)}
+                localCurrency={activity.localCurrency}
+              />
+            }
           />
           <FieldRow
             label="Price From"
@@ -124,7 +145,7 @@ export function ActivityPricingTab({ activity }: ActivityPricingTabProps) {
               <DualPrice
                 amount={activity.priceFrom}
                 currency={activity.currency}
-                localAmount={activity.priceLocal}
+                localAmount={convertToLocal(activity.priceFrom, activity)}
                 localCurrency={activity.localCurrency}
               />
             }
@@ -152,75 +173,6 @@ export function ActivityPricingTab({ activity }: ActivityPricingTabProps) {
                 </Badge>
               }
             />
-          )}
-        </CardContent>
-      </Card>
-
-      {/* Scraped Prices from Sources */}
-      <Card>
-        <CardHeader className="flex flex-row items-center justify-between">
-          <CardTitle className="text-base flex items-center gap-2">
-            <DollarSign className="h-4 w-4" />
-            Scraped Prices
-          </CardTitle>
-          <Button
-            variant="outline"
-            size="sm"
-            className="gap-1.5"
-            onClick={handleScrape}
-            disabled={scrapePricing.isPending || !activity.sourceUrls?.length}
-          >
-            {scrapePricing.isPending ? (
-              <Loader2 className="h-3.5 w-3.5 animate-spin" />
-            ) : (
-              <RefreshCw className="h-3.5 w-3.5" />
-            )}
-            {scrapePricing.isPending ? "Scraping..." : "Scrape Pricing"}
-          </Button>
-        </CardHeader>
-        <CardContent>
-          {activity.scrapedPrices && activity.scrapedPrices.length > 0 ? (
-            <div className="space-y-3">
-              {activity.scrapedPrices.map((sp, idx) => (
-                <div
-                  key={idx}
-                  className="flex items-center justify-between p-3 rounded-md border"
-                >
-                  <div className="flex items-center gap-2 min-w-0">
-                    <Badge variant="outline" className="text-xs shrink-0">
-                      {sp.source}
-                    </Badge>
-                    <a
-                      href={sp.url}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="text-xs text-muted-foreground hover:text-foreground truncate"
-                    >
-                      <ExternalLink className="h-3 w-3 inline mr-1" />
-                      {sp.url.replace(/^https?:\/\//, "").slice(0, 40)}...
-                    </a>
-                  </div>
-                  <div className="flex items-center gap-4 shrink-0">
-                    <div className="text-right">
-                      <div className="text-sm font-medium text-[#C9A84C]">
-                        AED {sp.aedPrice.toFixed(2)}
-                      </div>
-                      <div className="text-xs text-muted-foreground">
-                        {sp.localCurrency} {sp.localPrice.toFixed(2)}
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
-          ) : (
-            <div className="flex flex-col items-center justify-center py-8 text-muted-foreground">
-              <DollarSign className="h-8 w-8 mb-2" />
-              <p className="text-sm">No scraped prices yet</p>
-              <p className="text-xs mt-1">
-                Click &quot;Scrape Pricing&quot; to fetch prices from source URLs
-              </p>
-            </div>
           )}
         </CardContent>
       </Card>
@@ -276,56 +228,6 @@ export function ActivityPricingTab({ activity }: ActivityPricingTabProps) {
         </CardContent>
       </Card>
 
-      {/* Participants & Booking */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-base flex items-center gap-2">
-            <Users className="h-4 w-4" />
-            Participants & Booking
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-1 divide-y divide-border">
-          <FieldRow
-            label="Min Participants"
-            value={
-              activity.minParticipants !== null
-                ? activity.minParticipants
-                : <EmptyField />
-            }
-          />
-          <FieldRow
-            label="Max Participants"
-            value={
-              activity.maxParticipants !== null
-                ? activity.maxParticipants
-                : <EmptyField />
-            }
-          />
-          <FieldRow
-            label="Advance Booking Days"
-            value={
-              activity.advanceBookingDays !== null
-                ? `${activity.advanceBookingDays} days`
-                : <EmptyField />
-            }
-          />
-          <FieldRow
-            label="Instant Confirmation"
-            value={
-              <Badge
-                variant="secondary"
-                className={
-                  activity.instantConfirmation
-                    ? "bg-emerald-500/10 text-emerald-600 border-emerald-500/20"
-                    : "bg-muted text-muted-foreground"
-                }
-              >
-                {activity.instantConfirmation ? "Yes" : "No"}
-              </Badge>
-            }
-          />
-        </CardContent>
-      </Card>
     </div>
   );
 }

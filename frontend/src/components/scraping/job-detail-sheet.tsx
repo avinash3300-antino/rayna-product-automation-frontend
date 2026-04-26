@@ -34,35 +34,35 @@ const STATUS_CONFIG: Record<
 > = {
   pending: {
     label: "Pending",
-    className: "bg-gray-500/20 text-gray-400 border-gray-500/30",
+    className: "bg-muted text-muted-foreground",
   },
   scraping: {
     label: "Scraping",
-    className: "bg-blue-500/20 text-blue-400 border-blue-500/30",
+    className: "bg-blue-500/10 text-blue-600 border-blue-500/20",
     spinning: true,
   },
   extracting: {
     label: "Extracting",
-    className: "bg-amber-500/20 text-amber-400 border-amber-500/30",
+    className: "bg-amber-500/10 text-amber-600 border-amber-500/20",
     spinning: true,
   },
   saving: {
     label: "Saving",
-    className: "bg-blue-500/20 text-blue-400 border-blue-500/30",
+    className: "bg-blue-500/10 text-blue-600 border-blue-500/20",
     spinning: true,
   },
   enriching: {
     label: "Enriching",
-    className: "bg-purple-500/20 text-purple-400 border-purple-500/30",
+    className: "bg-purple-500/10 text-purple-600 border-purple-500/20",
     spinning: true,
   },
   completed: {
     label: "Completed",
-    className: "bg-emerald-500/20 text-emerald-400 border-emerald-500/30",
+    className: "bg-emerald-500/10 text-emerald-600 border-emerald-500/20",
   },
   failed: {
     label: "Failed",
-    className: "bg-red-500/20 text-red-400 border-red-500/30",
+    className: "bg-red-500/10 text-red-600 border-red-500/20",
   },
 };
 
@@ -84,10 +84,10 @@ export function JobDetailSheet({
   if (!job) {
     return (
       <Sheet open={open} onOpenChange={onOpenChange}>
-        <SheetContent className="bg-navy border-border/50 w-[400px] sm:max-w-[400px]">
+        <SheetContent className="w-[400px] sm:max-w-[400px]">
           <SheetHeader>
-            <SheetTitle className="text-foreground">Job Details</SheetTitle>
-            <SheetDescription className="text-muted-foreground">
+            <SheetTitle>Job Details</SheetTitle>
+            <SheetDescription>
               No job selected.
             </SheetDescription>
           </SheetHeader>
@@ -100,12 +100,12 @@ export function JobDetailSheet({
 
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
-      <SheetContent className="bg-navy border-border/50 w-[420px] sm:max-w-[420px] overflow-y-auto">
+      <SheetContent className="w-[420px] sm:max-w-[420px] overflow-y-auto">
         <SheetHeader className="pb-4">
-          <SheetTitle className="text-foreground flex items-center gap-2">
+          <SheetTitle className="flex items-center gap-2">
             Job Preview
             <Badge
-              variant="outline"
+              variant="secondary"
               className={`${statusCfg.className} ${
                 statusCfg.spinning ? "flex items-center gap-1" : ""
               }`}
@@ -116,7 +116,7 @@ export function JobDetailSheet({
               {statusCfg.label}
             </Badge>
           </SheetTitle>
-          <SheetDescription className="text-muted-foreground">
+          <SheetDescription>
             Quick overview of scrape job
           </SheetDescription>
         </SheetHeader>
@@ -131,14 +131,14 @@ export function JobDetailSheet({
               href={job.sourceUrl}
               target="_blank"
               rel="noopener noreferrer"
-              className="text-sm text-gold hover:text-gold/80 font-mono flex items-center gap-1 break-all"
+              className="text-sm text-primary hover:underline font-mono flex items-center gap-1 break-all"
             >
               {job.sourceUrl}
               <ExternalLink className="h-3 w-3 flex-shrink-0" />
             </a>
           </div>
 
-          <Separator className="bg-border/50" />
+          <Separator />
 
           {/* Category & Scrape Type */}
           <div className="grid grid-cols-2 gap-4">
@@ -146,7 +146,7 @@ export function JobDetailSheet({
               <p className="text-xs text-muted-foreground uppercase tracking-wider mb-1">
                 Category
               </p>
-              <p className="text-sm text-foreground capitalize">
+              <p className="text-sm capitalize">
                 {job.category}
               </p>
             </div>
@@ -154,13 +154,13 @@ export function JobDetailSheet({
               <p className="text-xs text-muted-foreground uppercase tracking-wider mb-1">
                 Scrape Type
               </p>
-              <p className="text-sm text-foreground capitalize">
+              <p className="text-sm capitalize">
                 {job.scrapeType}
               </p>
             </div>
           </div>
 
-          <Separator className="bg-border/50" />
+          <Separator />
 
           {/* Stats Grid */}
           <div>
@@ -168,46 +168,46 @@ export function JobDetailSheet({
               Statistics
             </p>
             <div className="grid grid-cols-2 gap-3">
-              <div className="flex items-center gap-2 rounded-lg border border-border/50 bg-navy-light/30 p-3">
-                <FileText className="h-4 w-4 text-gold" />
+              <div className="flex items-center gap-2 rounded-lg border p-3">
+                <FileText className="h-4 w-4 text-muted-foreground" />
                 <div>
-                  <p className="text-lg font-bold text-foreground">
+                  <p className="text-lg font-bold">
                     {job.pagesScraped}
                   </p>
                   <p className="text-xs text-muted-foreground">Pages</p>
                 </div>
               </div>
-              <div className="flex items-center gap-2 rounded-lg border border-blue-500/20 bg-blue-500/5 p-3">
-                <Database className="h-4 w-4 text-blue-400" />
+              <div className="flex items-center gap-2 rounded-lg border p-3">
+                <Database className="h-4 w-4 text-blue-600" />
                 <div>
-                  <p className="text-lg font-bold text-blue-400">
+                  <p className="text-lg font-bold">
                     {job.recordsFound}
                   </p>
                   <p className="text-xs text-muted-foreground">Found</p>
                 </div>
               </div>
-              <div className="flex items-center gap-2 rounded-lg border border-emerald-500/20 bg-emerald-500/5 p-3">
-                <Database className="h-4 w-4 text-emerald-400" />
+              <div className="flex items-center gap-2 rounded-lg border p-3">
+                <Database className="h-4 w-4 text-emerald-600" />
                 <div>
-                  <p className="text-lg font-bold text-emerald-400">
+                  <p className="text-lg font-bold">
                     {job.recordsSaved}
                   </p>
                   <p className="text-xs text-muted-foreground">Saved</p>
                 </div>
               </div>
-              <div className="flex items-center gap-2 rounded-lg border border-border/50 bg-navy-light/30 p-3">
-                <SkipForward className="h-4 w-4 text-gray-400" />
+              <div className="flex items-center gap-2 rounded-lg border p-3">
+                <SkipForward className="h-4 w-4 text-muted-foreground" />
                 <div>
-                  <p className="text-lg font-bold text-foreground">
+                  <p className="text-lg font-bold">
                     {job.recordsSkippedDup}
                   </p>
                   <p className="text-xs text-muted-foreground">Skipped</p>
                 </div>
               </div>
-              <div className="flex items-center gap-2 rounded-lg border border-purple-500/20 bg-purple-500/5 p-3 col-span-2">
-                <Sparkles className="h-4 w-4 text-purple-400" />
+              <div className="flex items-center gap-2 rounded-lg border p-3 col-span-2">
+                <Sparkles className="h-4 w-4 text-purple-600" />
                 <div>
-                  <p className="text-lg font-bold text-purple-400">
+                  <p className="text-lg font-bold">
                     {job.recordsEnriched}
                   </p>
                   <p className="text-xs text-muted-foreground">Enriched</p>
@@ -216,7 +216,7 @@ export function JobDetailSheet({
             </div>
           </div>
 
-          <Separator className="bg-border/50" />
+          <Separator />
 
           {/* Timing */}
           <div className="grid grid-cols-2 gap-4">
@@ -224,7 +224,7 @@ export function JobDetailSheet({
               <p className="text-xs text-muted-foreground uppercase tracking-wider mb-1">
                 Started At
               </p>
-              <p className="text-sm text-foreground">
+              <p className="text-sm">
                 {formatDate(job.startedAt)}
               </p>
             </div>
@@ -232,7 +232,7 @@ export function JobDetailSheet({
               <p className="text-xs text-muted-foreground uppercase tracking-wider mb-1">
                 Completed At
               </p>
-              <p className="text-sm text-foreground">
+              <p className="text-sm">
                 {formatDate(job.completedAt)}
               </p>
             </div>
@@ -241,20 +241,20 @@ export function JobDetailSheet({
           {/* Error indicator */}
           {job.errorsJson && Object.keys(job.errorsJson).length > 0 && (
             <>
-              <Separator className="bg-border/50" />
-              <div className="rounded-lg border border-red-500/20 bg-red-500/5 p-3">
-                <p className="text-xs text-red-400 font-medium">
+              <Separator />
+              <div className="rounded-lg border border-red-500/20 bg-red-500/10 p-3">
+                <p className="text-xs text-red-600 font-medium">
                   This job has errors. View full details for more information.
                 </p>
               </div>
             </>
           )}
 
-          <Separator className="bg-border/50" />
+          <Separator />
 
           {/* View Full Details Button */}
           <Link href={`/scraping/${encodeURIComponent(job.id)}`}>
-            <Button className="w-full bg-gold/20 text-gold hover:bg-gold/30 border border-gold/30">
+            <Button variant="outline" className="w-full">
               View Full Details
               <ArrowRight className="h-4 w-4 ml-2" />
             </Button>

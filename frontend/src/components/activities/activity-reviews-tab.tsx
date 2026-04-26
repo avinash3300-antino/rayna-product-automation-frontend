@@ -57,28 +57,39 @@ function StarRating({ rating }: { rating: number | null }) {
 
 function ReviewCard({ review }: { review: ActivityReview }) {
   const [expanded, setExpanded] = useState(false);
-  const isLong = review.reviewText.length > 250;
+  const [showOriginal, setShowOriginal] = useState(false);
+
+  const displayName = review.enrichedReviewerName || review.reviewerName;
+  const displayText = review.enrichedText || review.reviewText;
+  const isLong = displayText.length > 300;
+  const hasEnriched = !!review.enrichedText;
 
   return (
-    <div className="border rounded-lg p-4 space-y-2">
+    <div className="border rounded-lg p-4 space-y-3">
+      {/* Header: avatar + name + rating | platform badge */}
       <div className="flex items-start justify-between gap-3">
-        <div className="flex items-center gap-2.5">
-          <div className="h-8 w-8 rounded-full bg-muted flex items-center justify-center shrink-0">
+        <div className="flex items-center gap-3">
+          <div className="h-9 w-9 rounded-full bg-muted flex items-center justify-center shrink-0">
             {review.reviewerAvatarUrl ? (
               <img
                 src={review.reviewerAvatarUrl}
-                alt={review.reviewerName}
-                className="h-8 w-8 rounded-full object-cover"
+                alt={displayName}
+                className="h-9 w-9 rounded-full object-cover"
               />
             ) : (
               <User className="h-4 w-4 text-muted-foreground" />
             )}
           </div>
           <div>
-            <div className="flex items-center gap-1.5">
-              <span className="text-sm font-medium">{review.reviewerName}</span>
+            <div className="flex items-center gap-2">
+              <span className="text-sm font-semibold">{displayName}</span>
               {review.verified && (
                 <ShieldCheck className="h-3.5 w-3.5 text-emerald-500" />
+              )}
+              {review.enrichedReviewerName && (
+                <span className="text-[10px] text-muted-foreground bg-muted px-1.5 py-0.5 rounded">
+                  was: {review.reviewerName}
+                </span>
               )}
             </div>
             <div className="flex items-center gap-2 mt-0.5">
@@ -103,49 +114,59 @@ function ReviewCard({ review }: { review: ActivityReview }) {
         <p className="text-sm font-medium">{review.reviewTitle}</p>
       )}
 
-      {review.enrichedText ? (
-        <div className="grid grid-cols-2 gap-4">
-          <div>
-            <span className="text-xs font-medium text-muted-foreground mb-1 block">Original</span>
-            <p className="text-sm text-muted-foreground leading-relaxed bg-muted/30 p-3 rounded-md">
-              {isLong && !expanded ? review.reviewText.slice(0, 250) + "..." : review.reviewText}
-            </p>
-          </div>
-          <div>
-            <span className="text-xs font-medium text-emerald-600 mb-1 block">Enriched</span>
-            <p className="text-sm leading-relaxed bg-emerald-50 dark:bg-emerald-950/20 p-3 rounded-md">
-              {isLong && !expanded ? review.enrichedText.slice(0, 250) + "..." : review.enrichedText}
-            </p>
-          </div>
-        </div>
-      ) : (
-        <p className="text-sm text-muted-foreground leading-relaxed">
+      {/* Review text — show enriched as primary */}
+      <div className="space-y-2">
+        <p className="text-sm leading-relaxed">
           {isLong && !expanded
-            ? review.reviewText.slice(0, 250) + "..."
-            : review.reviewText}
+            ? displayText.slice(0, 300) + "..."
+            : displayText}
         </p>
-      )}
 
-      {isLong && (
-        <button
-          onClick={() => setExpanded(!expanded)}
-          className="text-xs text-primary hover:underline"
-        >
-          {expanded ? "Show less" : "Read more"}
-        </button>
-      )}
+        {/* Show original toggle — only when enriched version exists */}
+        {hasEnriched && showOriginal && (
+          <div className="border-l-2 border-muted pl-3 mt-2">
+            <span className="text-[10px] uppercase tracking-wider text-muted-foreground font-medium">
+              Original Review
+            </span>
+            <p className="text-sm text-muted-foreground leading-relaxed mt-1">
+              {isLong && !expanded
+                ? review.reviewText.slice(0, 300) + "..."
+                : review.reviewText}
+            </p>
+          </div>
+        )}
+      </div>
 
-      {review.sourceUrl && (
-        <a
-          href={review.sourceUrl}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="inline-flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground"
-        >
-          <ExternalLink className="h-3 w-3" />
-          View on {platformLabels[review.sourcePlatform] || review.sourcePlatform}
-        </a>
-      )}
+      {/* Actions row */}
+      <div className="flex items-center gap-3">
+        {isLong && (
+          <button
+            onClick={() => setExpanded(!expanded)}
+            className="text-xs text-primary hover:underline"
+          >
+            {expanded ? "Show less" : "Read more"}
+          </button>
+        )}
+        {hasEnriched && (
+          <button
+            onClick={() => setShowOriginal(!showOriginal)}
+            className="text-xs text-muted-foreground hover:text-foreground"
+          >
+            {showOriginal ? "Hide original" : "View original"}
+          </button>
+        )}
+        {review.sourceUrl && (
+          <a
+            href={review.sourceUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground ml-auto"
+          >
+            <ExternalLink className="h-3 w-3" />
+            {platformLabels[review.sourcePlatform] || review.sourcePlatform}
+          </a>
+        )}
+      </div>
     </div>
   );
 }

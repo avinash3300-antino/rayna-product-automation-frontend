@@ -137,6 +137,7 @@ export interface ActivityReview {
   reviewTitle: string | null;
   reviewText: string;
   enrichedText: string | null;
+  enrichedReviewerName: string | null;
   reviewDate: string | null;
   sourcePlatform: string;
   sourceUrl: string | null;

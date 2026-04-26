@@ -48,7 +48,7 @@ export interface Destination {
   productCounts: ProductCounts;
   lastIngestionRun: LastIngestionRun | null;
   lastScrapeRun?: LastScrapeRun | null;
-  intelligenceFilter: IntelligenceFilterInfo;
+  intelligenceFilter: IntelligenceFilterInfo | null;
   enabledCategories?: ProductCategory[];
 }
 
