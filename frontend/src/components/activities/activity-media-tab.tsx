@@ -15,6 +15,12 @@ interface ActivityMediaTabProps {
 export function ActivityMediaTab({ activity }: ActivityMediaTabProps) {
   const [lightboxIndex, setLightboxIndex] = useState<number | null>(null);
 
+  // Use first gallery image as cover (copyright-safe), fallback to coverImageUrl
+  const firstGalleryItem = activity.galleryJson?.[0];
+  const displayCoverUrl = firstGalleryItem
+    ? (typeof firstGalleryItem === "string" ? firstGalleryItem : firstGalleryItem.url)
+    : activity.coverImageUrl;
+
   // Normalize gallery images to {url, alt} pairs
   const galleryImages = (activity.galleryJson ?? [])
     .map((item, idx) => {
@@ -62,11 +68,11 @@ export function ActivityMediaTab({ activity }: ActivityMediaTabProps) {
           </CardTitle>
         </CardHeader>
         <CardContent>
-          {activity.coverImageUrl ? (
+          {displayCoverUrl ? (
             <div className="max-w-2xl">
               <div className="aspect-video rounded-lg bg-muted overflow-hidden">
                 <img
-                  src={activity.coverImageUrl}
+                  src={displayCoverUrl}
                   alt={activity.name}
                   className="w-full h-full object-cover"
                 />
