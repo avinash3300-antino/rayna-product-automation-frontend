@@ -95,6 +95,34 @@ export function ActivityCard({ activity }: ActivityCardProps) {
             {statusLabels[activity.status]}
           </Badge>
 
+          {/* Package / inclusion badges overlay */}
+          <div className="absolute bottom-2 right-2 flex gap-1">
+            {activity.isPackage && (
+              <Badge
+                variant="secondary"
+                className="text-[10px] bg-orange-500/90 text-white border-transparent"
+              >
+                Package
+              </Badge>
+            )}
+            {activity.hasTransport && (
+              <Badge
+                variant="secondary"
+                className="text-[10px] bg-violet-500/90 text-white border-transparent"
+              >
+                Transport
+              </Badge>
+            )}
+            {activity.hasMeals && (
+              <Badge
+                variant="secondary"
+                className="text-[10px] bg-teal-500/90 text-white border-transparent"
+              >
+                Meals
+              </Badge>
+            )}
+          </div>
+
           {/* Category badge overlay */}
           <Badge
             variant="secondary"

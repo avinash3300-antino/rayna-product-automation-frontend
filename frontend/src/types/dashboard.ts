@@ -51,7 +51,7 @@ export interface DashboardStats {
   pipeline_stages: PipelineStageData[];
   recent_jobs: RecentJobItem[];
   products_by_destination: ProductsByDestination[];
-  products_by_category: ProductsByCategory[];
+  products_by_category: Record<string, ProductsByCategory[]>;
 }
 
 // ---- Data Freshness Heatmap (kept static — no backend tracking yet) ----

@@ -1,5 +1,6 @@
 "use client";
 
+import { useRouter } from "next/navigation";
 import { Eye, Loader2 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
@@ -49,6 +50,8 @@ interface RecentJobsTableProps {
 }
 
 export function RecentJobsTable({ data }: RecentJobsTableProps) {
+  const router = useRouter();
+
   return (
     <Card>
       <CardHeader className="pb-3">
@@ -112,7 +115,12 @@ export function RecentJobsTable({ data }: RecentJobsTableProps) {
                       {formatDuration(job.duration_ms)}
                     </TableCell>
                     <TableCell>
-                      <Button variant="ghost" size="icon" className="h-8 w-8">
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="h-8 w-8"
+                        onClick={() => router.push(`/scraping/${job.id}`)}
+                      >
                         <Eye className="h-4 w-4" />
                       </Button>
                     </TableCell>

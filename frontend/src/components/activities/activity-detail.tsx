@@ -27,6 +27,7 @@ import { ActivityTimelineTab } from "./activity-timeline-tab";
 import { ActivityOperatorTab } from "./activity-operator-tab";
 import { ActivitySourceTab } from "./activity-source-tab";
 import { ActivityReviewsTab } from "./activity-reviews-tab";
+import { ActivityFaqTab } from "./activity-faq-tab";
 import { DeleteActivityDialog } from "./delete-activity-dialog";
 import { UpdateStatusDialog } from "./update-status-dialog";
 import type { ActivityStatus } from "@/types/activities";
@@ -200,6 +201,7 @@ export function ActivityDetail({ activityId }: ActivityDetailProps) {
           <TabsTrigger value="seo">SEO</TabsTrigger>
           <TabsTrigger value="media">Media</TabsTrigger>
           <TabsTrigger value="reviews">Reviews</TabsTrigger>
+          <TabsTrigger value="faq">FAQ</TabsTrigger>
           <TabsTrigger value="operator">Operator</TabsTrigger>
           <TabsTrigger value="source">Source</TabsTrigger>
         </TabsList>
@@ -234,6 +236,10 @@ export function ActivityDetail({ activityId }: ActivityDetailProps) {
 
         <TabsContent value="reviews">
           <ActivityReviewsTab activity={activity} />
+        </TabsContent>
+
+        <TabsContent value="faq">
+          <ActivityFaqTab activity={activity} />
         </TabsContent>
 
         <TabsContent value="operator">

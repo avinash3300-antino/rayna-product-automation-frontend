@@ -275,6 +275,9 @@ export function transformActivityCardResponse(
     durationMinutes: raw.duration_minutes,
     qualityScore: raw.quality_score,
     status: raw.status as ActivityStatus,
+    isPackage: raw.is_package ?? false,
+    hasTransport: raw.has_transport ?? false,
+    hasMeals: raw.has_meals ?? false,
   };
 }
 
@@ -367,6 +370,7 @@ export function transformActivityResponse(
     operatorWebsite: raw.operator_website,
     operatorEstablishedYear: raw.operator_established_year,
     operatorCertifications: raw.operator_certifications,
+    faqs: raw.faqs ?? null,
     otherAttributes: raw.other_attributes,
     verified: raw.verified,
     dedupHash: raw.dedup_hash,

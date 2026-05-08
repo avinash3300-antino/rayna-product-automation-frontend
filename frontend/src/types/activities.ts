@@ -28,6 +28,9 @@ export interface ActivityCardItem {
   durationMinutes: number;
   qualityScore: number;
   status: ActivityStatus;
+  isPackage: boolean;
+  hasTransport: boolean;
+  hasMeals: boolean;
 }
 
 export interface Activity {
@@ -116,6 +119,7 @@ export interface Activity {
   operatorWebsite: string | null;
   operatorEstablishedYear: number | null;
   operatorCertifications: string[] | null;
+  faqs: { question: string; answer: string }[] | null;
   otherAttributes: { label: string; value: string; category_hint?: string }[] | null;
   verified: boolean;
   dedupHash: string;

@@ -25,6 +25,9 @@ interface ListActivitiesParams {
   max_price?: number;
   free_cancellation?: boolean;
   instant_confirmation?: boolean;
+  is_package?: boolean;
+  has_transport?: boolean;
+  has_meals?: boolean;
   page?: number;
   perPage?: number;
 }
@@ -36,6 +39,18 @@ export function useActivityCities() {
     queryKey: queryKeys.activities.cities,
     queryFn: async () => {
       return api.get<string[]>("/api/v1/activities/cities");
+    },
+    staleTime: 5 * 60 * 1000,
+  });
+}
+
+export function useActivityCategories() {
+  const api = useApiClient();
+
+  return useQuery<string[]>({
+    queryKey: queryKeys.activities.categories,
+    queryFn: async () => {
+      return api.get<string[]>("/api/v1/activities/categories");
     },
     staleTime: 5 * 60 * 1000,
   });
@@ -63,6 +78,12 @@ export function useActivities(params: ListActivitiesParams = {}) {
           "instant_confirmation",
           String(params.instant_confirmation)
         );
+      if (params.is_package != null)
+        searchParams.set("is_package", String(params.is_package));
+      if (params.has_transport != null)
+        searchParams.set("has_transport", String(params.has_transport));
+      if (params.has_meals != null)
+        searchParams.set("has_meals", String(params.has_meals));
       if (params.page) searchParams.set("page", String(params.page));
       if (params.perPage) searchParams.set("per_page", String(params.perPage));
 
@@ -176,6 +197,25 @@ export function useScrapePricing() {
       });
       queryClient.invalidateQueries({
         queryKey: queryKeys.activities.all,
+      });
+    },
+  });
+}
+
+export function useGenerateFaqs() {
+  const api = useApiClient();
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (activityId: string) => {
+      return api.post<{ faqs: { question: string; answer: string }[]; count: number }>(
+        `/api/v1/activities/${activityId}/generate-faqs`,
+        {}
+      );
+    },
+    onSuccess: (_data, activityId) => {
+      queryClient.invalidateQueries({
+        queryKey: queryKeys.activities.detail(activityId),
       });
     },
   });

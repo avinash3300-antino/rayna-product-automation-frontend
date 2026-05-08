@@ -205,6 +205,9 @@ export interface BackendActivityCard {
   duration_minutes: number;
   quality_score: number;
   status: string;
+  is_package: boolean;
+  has_transport: boolean;
+  has_meals: boolean;
 }
 
 export interface BackendActivityResponse {
@@ -293,6 +296,7 @@ export interface BackendActivityResponse {
   operator_website: string | null;
   operator_established_year: number | null;
   operator_certifications: string[] | null;
+  faqs: { question: string; answer: string }[] | null;
   other_attributes: { label: string; value: string; category_hint?: string }[] | null;
   verified: boolean;
   dedup_hash: string;

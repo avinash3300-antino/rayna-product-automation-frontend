@@ -23,6 +23,8 @@ import { CruiseItineraryTab } from "./cruise-itinerary-tab";
 import { CruiseVesselTab } from "./cruise-vessel-tab";
 import { CruisePricingTab } from "./cruise-pricing-tab";
 import { CruiseSourceTab } from "./cruise-source-tab";
+import { CruiseMediaTab } from "./cruise-media-tab";
+import { CruiseReviewsTab } from "./cruise-reviews-tab";
 import { DeleteCruiseDialog } from "./delete-cruise-dialog";
 import { UpdateCruiseStatusDialog } from "./update-cruise-status-dialog";
 import type { CruiseStatus } from "@/types/cruises";
@@ -194,6 +196,8 @@ export function CruiseDetail({ cruiseId }: CruiseDetailProps) {
           <TabsTrigger value="itinerary">Itinerary</TabsTrigger>
           <TabsTrigger value="vessel">Vessel</TabsTrigger>
           <TabsTrigger value="pricing">Pricing</TabsTrigger>
+          <TabsTrigger value="media">Media</TabsTrigger>
+          <TabsTrigger value="reviews">Reviews</TabsTrigger>
           <TabsTrigger value="source">Source</TabsTrigger>
         </TabsList>
 
@@ -215,6 +219,14 @@ export function CruiseDetail({ cruiseId }: CruiseDetailProps) {
 
         <TabsContent value="pricing">
           <CruisePricingTab cruise={cruise} />
+        </TabsContent>
+
+        <TabsContent value="media">
+          <CruiseMediaTab cruise={cruise} />
+        </TabsContent>
+
+        <TabsContent value="reviews">
+          <CruiseReviewsTab cruise={cruise} />
         </TabsContent>
 
         <TabsContent value="source">

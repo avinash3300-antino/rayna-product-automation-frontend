@@ -1,5 +1,6 @@
 "use client";
 
+import { useMemo, useState } from "react";
 import {
   PieChart,
   Pie,
@@ -8,7 +9,16 @@ import {
   ResponsiveContainer,
 } from "recharts";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import type { ProductsByCategory } from "@/types/dashboard";
+
+const ALL_KEY = "__all__";
 
 const CHART_COLORS = [
   "hsl(var(--chart-1))",
@@ -37,19 +47,54 @@ function CustomTooltip({
 }
 
 interface ProductsByCategoryChartProps {
-  data: ProductsByCategory[];
+  data: Record<string, ProductsByCategory[]>;
 }
 
 export function ProductsByCategoryChart({ data }: ProductsByCategoryChartProps) {
-  const total = data.reduce((s, c) => s + c.count, 0);
+  const cities = Object.keys(data).sort();
+  const [selected, setSelected] = useState<string>(ALL_KEY);
+
+  const categoryData = useMemo(() => {
+    if (selected !== ALL_KEY) return data[selected] ?? [];
+
+    // Merge all cities
+    const merged: Record<string, number> = {};
+    for (const cats of Object.values(data)) {
+      for (const c of cats) {
+        merged[c.category] = (merged[c.category] ?? 0) + c.count;
+      }
+    }
+    return Object.entries(merged)
+      .map(([category, count]) => ({ category, count }))
+      .sort((a, b) => b.count - a.count);
+  }, [data, selected]);
+
+  const total = categoryData.reduce((s, c) => s + c.count, 0);
 
   return (
     <Card>
       <CardHeader className="pb-3">
-        <CardTitle className="text-base">Products by Category</CardTitle>
+        <div className="flex items-center justify-between gap-4">
+          <CardTitle className="text-base">Products by Category</CardTitle>
+          {cities.length > 0 && (
+            <Select value={selected} onValueChange={setSelected}>
+              <SelectTrigger className="w-[180px] h-8 text-sm">
+                <SelectValue placeholder="Select city" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value={ALL_KEY}>All Cities</SelectItem>
+                {cities.map((city) => (
+                  <SelectItem key={city} value={city}>
+                    {city}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          )}
+        </div>
       </CardHeader>
       <CardContent>
-        {data.length === 0 ? (
+        {categoryData.length === 0 ? (
           <div className="flex items-center justify-center h-[220px] text-muted-foreground">
             No category data yet
           </div>
@@ -59,7 +104,7 @@ export function ProductsByCategoryChart({ data }: ProductsByCategoryChartProps) 
               <ResponsiveContainer width={220} height={220}>
                 <PieChart>
                   <Pie
-                    data={data}
+                    data={categoryData}
                     cx="50%"
                     cy="50%"
                     innerRadius={65}
@@ -69,7 +114,7 @@ export function ProductsByCategoryChart({ data }: ProductsByCategoryChartProps) 
                     nameKey="category"
                     strokeWidth={0}
                   >
-                    {data.map((entry, i) => (
+                    {categoryData.map((entry, i) => (
                       <Cell
                         key={entry.category}
                         fill={CHART_COLORS[i % CHART_COLORS.length]}
@@ -88,9 +133,9 @@ export function ProductsByCategoryChart({ data }: ProductsByCategoryChartProps) 
               </div>
             </div>
 
-            {/* Legend */}
-            <div className="flex flex-col gap-3">
-              {data.map((entry, i) => (
+            {/* Legend — hidden scrollbar */}
+            <div className="flex flex-col gap-3 max-h-[220px] overflow-y-auto scrollbar-hide" style={{ scrollbarWidth: "none" }}>
+              {categoryData.map((entry, i) => (
                 <div key={entry.category} className="flex items-center gap-2.5">
                   <span
                     className="h-3 w-3 rounded-full shrink-0"
@@ -98,7 +143,7 @@ export function ProductsByCategoryChart({ data }: ProductsByCategoryChartProps) 
                       backgroundColor: CHART_COLORS[i % CHART_COLORS.length],
                     }}
                   />
-                  <span className="text-sm font-medium">{entry.category}</span>
+                  <span className="text-sm font-medium whitespace-nowrap">{entry.category}</span>
                   <span className="text-sm text-muted-foreground tabular-nums ml-auto">
                     {entry.count.toLocaleString()}
                   </span>

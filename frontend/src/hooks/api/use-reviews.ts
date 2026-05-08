@@ -49,6 +49,21 @@ export function useScrapeReviews() {
   });
 }
 
+export function useCruiseReviews(cruiseId: string | null) {
+  const api = useApiClient();
+
+  return useQuery<ActivityReviewList>({
+    queryKey: queryKeys.cruises.reviews(cruiseId ?? ""),
+    queryFn: async () => {
+      const raw = await api.get<BackendReviewListResponse>(
+        `/api/v1/reviews/cruises/${cruiseId}`
+      );
+      return transformReviewListResponse(raw);
+    },
+    enabled: !!cruiseId,
+  });
+}
+
 export function useEnrichReviews() {
   const api = useApiClient();
   const queryClient = useQueryClient();

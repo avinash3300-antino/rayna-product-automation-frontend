@@ -10,6 +10,7 @@ import {
   AlertCircle,
   ChevronLeft,
   ChevronRight,
+  Download,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -24,10 +25,13 @@ import { ActivityFilters, INITIAL_FILTERS } from "./activity-filters";
 import { ActivityGrid } from "./activity-grid";
 import { ActivityTable } from "./activity-table";
 import { useActivities } from "@/hooks/api/use-activities";
+import { useSession } from "next-auth/react";
 import type { ActivityFiltersState } from "./activity-filters";
 import type { ActivityViewMode } from "@/types/activities";
 
 const PAGE_SIZE_OPTIONS = [30, 40, 50] as const;
+
+const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
 
 export function ActivityBrowser() {
   const [viewMode, setViewMode] = useState<ActivityViewMode>("grid");
@@ -36,6 +40,8 @@ export function ActivityBrowser() {
   const [filters, setFilters] = useState<ActivityFiltersState>(INITIAL_FILTERS);
   const [pageSize, setPageSize] = useState<number>(30);
   const [page, setPage] = useState(1);
+  const [exporting, setExporting] = useState(false);
+  const { data: session } = useSession();
 
   // Debounce search input (300ms)
   const debounceTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -60,10 +66,27 @@ export function ActivityBrowser() {
   const queryParams = {
     search: debouncedSearch || undefined,
     category: filters.category !== "all" ? filters.category : undefined,
-    status: filters.status !== "all" ? filters.status : undefined,
     city: filters.city !== "all" ? filters.city : undefined,
     free_cancellation: filters.freeCancellation ? true : undefined,
     instant_confirmation: filters.instantConfirmation ? true : undefined,
+    is_package:
+      filters.activityKind === "individual"
+        ? false
+        : filters.activityKind === "package"
+          ? true
+          : undefined,
+    has_transport:
+      filters.inclusions === "pure"
+        ? false
+        : filters.inclusions === "transport"
+          ? true
+          : undefined,
+    has_meals:
+      filters.inclusions === "pure"
+        ? false
+        : filters.inclusions === "meals"
+          ? true
+          : undefined,
     page,
     perPage: pageSize,
   };
@@ -85,6 +108,38 @@ export function ActivityBrowser() {
     },
     []
   );
+
+  const handleExportCSV = useCallback(async () => {
+    setExporting(true);
+    try {
+      const params = new URLSearchParams();
+      if (filters.city !== "all") params.set("city", filters.city);
+      if (filters.category !== "all") params.set("category", filters.category);
+      const qs = params.toString();
+      const res = await fetch(
+        `${API_BASE}/api/v1/activities/export${qs ? `?${qs}` : ""}`,
+        {
+          headers: {
+            Authorization: `Bearer ${session?.accessToken || ""}`,
+          },
+        }
+      );
+      if (!res.ok) throw new Error("Export failed");
+      const blob = await res.blob();
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `activities${filters.city !== "all" ? `_${filters.city}` : ""}.csv`;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      URL.revokeObjectURL(url);
+    } catch (err) {
+      console.error("Export failed:", err);
+    } finally {
+      setExporting(false);
+    }
+  }, [filters, session?.accessToken]);
 
   const startIdx = (page - 1) * pageSize;
   const endIdx = Math.min(startIdx + pageSize, total);
@@ -133,8 +188,24 @@ export function ActivityBrowser() {
           </span>
         )}
 
+        {/* Export CSV */}
+        <Button
+          variant="outline"
+          size="sm"
+          className="ml-auto"
+          onClick={handleExportCSV}
+          disabled={exporting || isLoading}
+        >
+          {exporting ? (
+            <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+          ) : (
+            <Download className="h-4 w-4 mr-2" />
+          )}
+          Export CSV
+        </Button>
+
         {/* View toggle */}
-        <div className="flex items-center border rounded-md ml-auto">
+        <div className="flex items-center border rounded-md">
           <Button
             variant={viewMode === "grid" ? "secondary" : "ghost"}
             size="icon"
